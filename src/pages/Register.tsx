@@ -1,8 +1,8 @@
-import React, { FC, useState } from "react";
-import {Button, Card, TextField, Typography} from "@material-ui/core";
+import React, { useState } from "react";
+import { Button, Card, TextField, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { fb } from "../app/App";
-import {Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const styles = makeStyles(() => ({
     container: {
@@ -30,8 +30,8 @@ const styles = makeStyles(() => ({
         textDecoration: "none",
     },
     root: {
-        marginLeft: "auto"
-    }
+        marginLeft: "auto",
+    },
 }));
 
 export const Register = () => {
@@ -39,6 +39,7 @@ export const Register = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [repeatPassword, setRepeatPassword] = useState("");
+    const [login, setLogin] = useState("");
     const [error, setError] = useState<string | undefined>(undefined);
     const [success, setSuccess] = useState(false);
 
@@ -49,7 +50,19 @@ export const Register = () => {
         }
         fb.auth()
             .createUserWithEmailAndPassword(email, password)
-            .then(() => setSuccess(true))
+            .then((result) => {
+                if (result.user) {
+                    result.user
+                        .updateProfile({
+                            displayName: login,
+                        })
+                        .then(() => setSuccess(true))
+                        .catch((error) => {
+                            setError(error.message);
+                            setSuccess(false);
+                        });
+                }
+            })
             .catch((error) => {
                 setError(error.message);
                 setSuccess(false);
@@ -59,21 +72,15 @@ export const Register = () => {
     return (
         <div className={classes.container}>
             <Card className={classes.card} variant="outlined">
+                <TextField label="Login" value={login} onChange={(e) => setLogin(e.target.value)} />
+                <TextField label="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
                 <TextField
-                    id="standard-basic"
-                    label="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-                <TextField
-                    id="standard-basic"
                     type={"password"}
                     label="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
                 <TextField
-                    id="standard-basic"
                     type={"password"}
                     label="Confirm password"
                     value={repeatPassword}
@@ -83,11 +90,12 @@ export const Register = () => {
                     Register
                 </Button>
                 <Typography className={classes.root}>
-                    <Link className={classes.login} to={"/login"}>Login</Link>
+                    <Link className={classes.login} to={"/login"}>
+                        Login
+                    </Link>
                 </Typography>
-                    {success && <p className={classes.success}>Success!</p>}
-                    {error && <p className={classes.error}>{error}</p>}
-
+                {success && <p className={classes.success}>Success!</p>}
+                {error && <p className={classes.error}>{error}</p>}
             </Card>
         </div>
     );
