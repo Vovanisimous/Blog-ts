@@ -1,7 +1,8 @@
 import React, { FC, useState } from "react";
-import { Button, Card, TextField } from "@material-ui/core";
+import {Button, Card, TextField, Typography} from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { fb } from "../app/App";
+import {Link} from "react-router-dom";
 
 const styles = makeStyles(() => ({
     container: {
@@ -25,6 +26,12 @@ const styles = makeStyles(() => ({
     error: {
         color: "red",
     },
+    login: {
+        textDecoration: "none",
+    },
+    root: {
+        marginLeft: "auto"
+    }
 }));
 
 export const Register = () => {
@@ -75,8 +82,12 @@ export const Register = () => {
                 <Button variant="contained" color="primary" onClick={onRegister}>
                     Register
                 </Button>
-                {success && <p className={classes.success}>Success!</p>}
-                {error && <p className={classes.error}>{error}</p>}
+                <Typography className={classes.root}>
+                    <Link className={classes.login} to={"/login"}>Login</Link>
+                </Typography>
+                    {success && <p className={classes.success}>Success!</p>}
+                    {error && <p className={classes.error}>{error}</p>}
+
             </Card>
         </div>
     );

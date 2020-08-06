@@ -1,7 +1,8 @@
-import React from "react";
+import React, {useState} from "react";
 import { Button, Card, TextField, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { Link } from "react-router-dom";
+import { fb } from "../app/App";
 
 const styles = makeStyles(() => ({
     container: {
@@ -25,22 +26,49 @@ const styles = makeStyles(() => ({
     root: {
         marginLeft: "auto",
     },
+    error: {
+        color: "red"
+    }
 }));
 
 export const Login = () => {
     const classes = styles();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState<string | undefined>(undefined);
+    const [success, setSuccess] = useState(false);
+
+    const onLogin= () => {
+        fb.auth().signInWithEmailAndPassword(email, password)
+            .then(()=>setSuccess(true))
+            .catch((error) => {
+                setError(error.message)
+                setSuccess(false)
+        })
+    }
 
     return (
         <div className={classes.container}>
             <Card className={classes.card} variant="outlined">
-                <TextField id="standard-basic" label="Email" />
-                <TextField id="standard-basic" label="Password" />
-                <Button variant="contained" color="primary">
+                <TextField
+                    id="standard-basic"
+                    label="Email" value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                />
+                <TextField
+                    id="standard-basic"
+                    label="Password"
+                    type={"password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+                <Button variant="contained" color="primary" onClick={onLogin}>
                     Login
                 </Button>
                 <Typography className={classes.root}>
                     <Link className={classes.register} to={"/register"}>Register</Link>
                 </Typography>
+                {error && <p className={classes.error}>{error}</p>}
             </Card>
         </div>
     );
