@@ -33,7 +33,6 @@ export const Header = (props: IProps) => {
     const open = Boolean(anchorEl);
     const context = useContext(AuthContext);
 
-
     useEffect( () => {
         history.listen(() => {
             setAnchorEl(null);
@@ -60,7 +59,6 @@ export const Header = (props: IProps) => {
         setAnchorEl(null);
         history.push("/profile");
     }
-
 
     return (
         <AppBar position="fixed">
