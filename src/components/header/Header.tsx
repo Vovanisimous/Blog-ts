@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, {useContext, useEffect} from "react";
 import { AppBar, IconButton, MenuItem, Menu, Toolbar, Typography, Button } from "@material-ui/core";
 import { AccountCircle } from "@material-ui/icons";
 import { makeStyles } from "@material-ui/core/styles";
@@ -33,6 +33,13 @@ export const Header = (props: IProps) => {
     const open = Boolean(anchorEl);
     const context = useContext(AuthContext);
 
+
+    useEffect( () => {
+        history.listen(() => {
+            setAnchorEl(null);
+        })
+    }, [])
+
     const handleClose = () => {
         setAnchorEl(null);
     };
@@ -46,6 +53,7 @@ export const Header = (props: IProps) => {
             return;
         }
         props.onLogout();
+        history.push("/login")
     };
 
     const goToProfile = () => {
