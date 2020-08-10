@@ -1,9 +1,8 @@
-import React, {useContext, useEffect} from "react";
+import React, { useContext, useEffect } from "react";
 import { AppBar, IconButton, MenuItem, Menu, Toolbar, Typography, Button } from "@material-ui/core";
-import { AccountCircle } from "@material-ui/icons";
 import { makeStyles } from "@material-ui/core/styles";
 import { Link, useHistory } from "react-router-dom";
-import { AuthContext } from "../../app/App";
+import { AppContext, fb } from "../../app/App";
 
 interface IProps {
     onLogout?(): void;
@@ -21,9 +20,16 @@ const styles = makeStyles(() => ({
     },
     login: {
         marginLeft: "auto",
-        backgroundColor: "white"
-    }
+        backgroundColor: "white",
+    },
+    avatar: {
+        height: 40,
+        width: 40,
+        borderRadius: "50%",
+    },
 }));
+
+const DEFAULT_AVATAR = require("../../pages/profile/default-avatar.png");
 
 export const Header = (props: IProps) => {
     const classes = styles();
@@ -31,13 +37,14 @@ export const Header = (props: IProps) => {
 
     const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
     const open = Boolean(anchorEl);
-    const context = useContext(AuthContext);
+    const context = useContext(AppContext);
+    const currentUser = context.user;
 
-    useEffect( () => {
+    useEffect(() => {
         history.listen(() => {
             setAnchorEl(null);
-        })
-    }, [])
+        });
+    }, []);
 
     const handleClose = () => {
         setAnchorEl(null);
@@ -52,13 +59,13 @@ export const Header = (props: IProps) => {
             return;
         }
         props.onLogout();
-        history.push("/login")
+        history.push("/login");
     };
 
     const goToProfile = () => {
         setAnchorEl(null);
         history.push("/profile");
-    }
+    };
 
     return (
         <AppBar position="fixed">
@@ -68,7 +75,7 @@ export const Header = (props: IProps) => {
                         myBlog.net
                     </Link>
                 </Typography>
-                {context ? (
+                {context.auth ? (
                     <div className={classes.icon}>
                         <IconButton
                             aria-label="account of current user"
@@ -77,7 +84,14 @@ export const Header = (props: IProps) => {
                             color="inherit"
                             onClick={handleMenu}
                         >
-                            <AccountCircle />
+                            <img
+                                className={classes.avatar}
+                                src={
+                                    currentUser
+                                        ? currentUser.avatar
+                                        : DEFAULT_AVATAR
+                                }
+                            />
                         </IconButton>
                         <Menu
                             id="menu-appbar"
@@ -99,7 +113,11 @@ export const Header = (props: IProps) => {
                         </Menu>
                     </div>
                 ) : (
-                    <Button className={classes.login} onClick={() => history.push("/login")} color={"default"}>
+                    <Button
+                        className={classes.login}
+                        onClick={() => history.push("/login")}
+                        color={"default"}
+                    >
                         Login
                     </Button>
                 )}

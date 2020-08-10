@@ -8,16 +8,32 @@ import { Register } from "../pages/Register";
 import * as firebase from "firebase";
 import { Profile } from "../pages/profile/Profile";
 import { CreateArticle } from "../pages/CreateArticle";
+import { IUser } from "../entity/user";
+import { IAppContext } from "../entity/app";
+import {SeparatePost} from "../components/SeparatePost";
+import {Post} from "../pages/Post";
 
 export const fb = firebase;
 const firebaseConfig = require("../firebase/firebase-config.json");
 fb.initializeApp(firebaseConfig);
 
-export const AuthContext = createContext(false);
+export const AppContext = createContext<IAppContext>({
+    auth: false,
+    user: {
+        email: "",
+        login: "",
+        id: "",
+        avatar: null,
+    },
+    updateUser(user: Partial<IUser>) {
+        return Promise.resolve();
+    }
+});
 
 function App() {
     const [auth, setAuth] = useState(false);
-    const userId = fb.auth().currentUser?.uid;
+    const [user, setUser] = useState<IUser | undefined>(undefined);
+
     useEffect(() => {
         fb.auth().onAuthStateChanged(async (user) => {
             // if (user) {
@@ -27,14 +43,24 @@ function App() {
             // }
             if (user) {
                 setAuth(!!user);
-                fb.database()
+                if (user && user.email && user.displayName) {
+                    setUser({
+                        login: user.displayName,
+                        email: user.email,
+                        avatar: user.photoURL,
+                        id: user.uid,
+                    });
+                }
+                await fb
+                    .database()
                     .ref(`users/${user.uid}`)
                     .once("value", async (snapshot) => {
                         const data = snapshot.val();
                         const avatarURL = await fb.storage().ref(data.avatar).getDownloadURL();
                         user.updateProfile({
-                            photoURL: avatarURL
+                            photoURL: avatarURL,
                         });
+                        updateUser({avatar: avatarURL});
                     });
             }
         });
@@ -46,8 +72,39 @@ function App() {
             .then(() => setAuth(false));
     };
 
+    const updateUser = (value: Partial<IUser>): Promise<void> => {
+        if (user) {
+            setUser({
+                id: user.id,
+                email: value.email || user.email,
+                login: value.login || user.login,
+                avatar: value.avatar || user.avatar
+            });
+        }
+        const currentUser = fb.auth().currentUser;
+        if (currentUser) {
+            const isEmailChanged = fb.auth().currentUser?.email !== value?.email;
+            if (isEmailChanged && value.email) {
+                return currentUser.updateEmail(value.email);
+            }
+            const isLoginChanged = fb.auth().currentUser?.displayName !== value.login;
+            if (isLoginChanged && value.login) {
+                return  currentUser.updateProfile({
+                    displayName: value.login
+                });
+            }
+            const isAvatarChanged = fb.auth().currentUser?.photoURL !== value.avatar;
+            if (isAvatarChanged && value.avatar) {
+                return currentUser.updateProfile({
+                    photoURL: value.avatar
+                });
+            }
+        }
+        return Promise.resolve();
+    }
+
     return (
-        <AuthContext.Provider value={auth}>
+        <AppContext.Provider value={{ auth, user, updateUser }}>
             <BrowserRouter>
                 <Header onLogout={onLogout} />
                 <Switch>
@@ -56,9 +113,10 @@ function App() {
                     <Route path={"/register"} component={Register} />
                     <Route path={"/profile"} component={Profile} />
                     <Route path={"/article"} component={CreateArticle} />
+                    <Route path={"/posts/:id"} component={Post} />
                 </Switch>
             </BrowserRouter>
-        </AuthContext.Provider>
+        </AppContext.Provider>
     );
 }
 

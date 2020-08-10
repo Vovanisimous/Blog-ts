@@ -4,6 +4,8 @@ import { Button, TextField, Typography } from "@material-ui/core";
 import { fb } from "../app/App";
 import { v4 } from "uuid";
 import { Alert } from "@material-ui/lab";
+import moment from "moment"
+
 
 const styles = makeStyles(() => ({
     container: {
@@ -25,17 +27,29 @@ export const CreateArticle = () => {
     const [name, setName] = useState("");
     const [text, setText] = useState("");
     const [postSuccess, setPostSuccess] = useState(false);
+    const [postError, setPostError] = useState(false)
     const database = fb.database();
     const inputProps = {
         maxLength: 40,
     };
 
-    const usersArticle = () => {
-        const key = fb.auth().currentUser?.uid;
-        database.ref(`posts/${key}/${v4()}`).set({ name, text });
-        setName("");
-        setText("");
-        setPostSuccess(true);
+    const createArticle = () => {
+        const userId = fb.auth().currentUser?.uid;
+        // TODO: сделать проверку на пустые значения полей {DONE!}
+        // TODO: сделать проверку на уже существующую статью с таким же именем
+        const createDate = moment().toISOString();
+        if (name.length > 0 && text.length > 0) {
+            database
+                .ref(`posts/${v4()}`)
+                .set({name, text, userId, createdAt: createDate})
+                .then(() => {
+                    setName("");
+                    setText("");
+                    setPostSuccess(true);
+                });
+        }else {
+            setPostError(true)
+        }
     };
 
     return (
@@ -63,10 +77,11 @@ export const CreateArticle = () => {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
             />
-            <Button variant="contained" color="primary" fullWidth onClick={usersArticle}>
+            <Button variant="contained" color="primary" fullWidth onClick={createArticle}>
                 Upload
             </Button>
-            {postSuccess && <Alert severity="success">Your post has been added</Alert>}
+            {postSuccess && <Alert severity="success">Your post has been added!</Alert>}
+            {postError && <Alert severity="error">Article name and Article text must not be empty!</Alert>}
         </div>
     );
 };
