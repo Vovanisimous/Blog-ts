@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, Card, TextField, Typography } from "@material-ui/core";
+import { Button, TextField, Typography } from "@material-ui/core";
 import { fb } from "../app/App";
-import { auth } from "firebase";
-import {kMaxLength} from "buffer";
-import {v4} from "uuid";
+import { v4 } from "uuid";
+import { Alert } from "@material-ui/lab";
 
 const styles = makeStyles(() => ({
     container: {
@@ -25,15 +24,18 @@ export const CreateArticle = () => {
     const classes = styles();
     const [name, setName] = useState("");
     const [text, setText] = useState("");
+    const [postSuccess, setPostSuccess] = useState(false);
     const database = fb.database();
     const inputProps = {
         maxLength: 40,
     };
 
-
     const usersArticle = () => {
         const key = fb.auth().currentUser?.uid;
         database.ref(`posts/${key}/${v4()}`).set({ name, text });
+        setName("");
+        setText("");
+        setPostSuccess(true);
     };
 
     return (
@@ -49,7 +51,7 @@ export const CreateArticle = () => {
                 autoFocus={true}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                inputProps = {inputProps}
+                inputProps={inputProps}
             />
             <TextField
                 required
@@ -64,6 +66,7 @@ export const CreateArticle = () => {
             <Button variant="contained" color="primary" fullWidth onClick={usersArticle}>
                 Upload
             </Button>
+            {postSuccess && <Alert severity="success">Your post has been added</Alert>}
         </div>
     );
 };
