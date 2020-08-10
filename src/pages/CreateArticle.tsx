@@ -3,6 +3,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import { Button, Card, TextField, Typography } from "@material-ui/core";
 import { fb } from "../app/App";
 import { auth } from "firebase";
+import {kMaxLength} from "buffer";
 
 const styles = makeStyles(() => ({
     container: {
@@ -24,10 +25,14 @@ export const CreateArticle = () => {
     const [name, setName] = useState("");
     const [text, setText] = useState("");
     const database = fb.database();
+    const inputProps = {
+        maxLength: 40,
+    };
+
 
     const usersArticle = () => {
         const key = fb.auth().currentUser?.uid;
-        database.ref(`posts/${key}`).set({ name, text });
+        database.ref(`posts/${key}/${name}`).set({ name, text });
     };
 
     return (
@@ -43,6 +48,7 @@ export const CreateArticle = () => {
                 autoFocus={true}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                inputProps = {inputProps}
             />
             <TextField
                 required

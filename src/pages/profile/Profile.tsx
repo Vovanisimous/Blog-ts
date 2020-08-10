@@ -84,17 +84,22 @@ export const Profile = () => {
     const onEmailChange = () => {
         fb.auth()
             .currentUser?.updateEmail(email)
-            .then(() => setEmailSuccess(true))
+            .then(() => {
+                setEmailSuccess(true)
+                database.ref(`users/${userId}`).update({email})
+            })
             .catch((error) => setEmailError(error.message));
-        database.ref(`users/${userId}`).update({email})
 };
 
     const onUserNameChange = () => {
         fb.auth()
             .currentUser?.updateProfile({ displayName: userName })
-            .then(() => setUserNameSuccess(true))
+            .then(() => {
+                setUserNameSuccess(true)
+                database.ref(`users/${userId}`).update({login: userName})
+            })
             .catch((error) => setUserNameError(error.message));
-        database.ref(`users/${userId}`).update({login: userName})
+
     };
 
     const onPassChange = () => {
@@ -153,11 +158,12 @@ export const Profile = () => {
                 .then(async () => {
                     const image = await fb.storage().ref().child(name).getDownloadURL();
                     setSrc(image);
+                    database.ref(`users/${userId}`).update({avatar: name});
                     fb.auth().currentUser?.updateProfile({
                         photoURL: image
                     });
                 });
-            database.ref(`users/${userId}`).update({avatar: name})
+
         }
     };
 
