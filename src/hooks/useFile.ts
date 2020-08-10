@@ -11,8 +11,8 @@ export function useFile(
     params: IFileServiceParams,
 ): {
     file?: File;
-    src?: string;
-    setSrc: Dispatch<SetStateAction<string | undefined>>;
+    src?: string | null;
+    setSrc: Dispatch<SetStateAction<string | undefined | null>>;
     getError?: (file: File) => Promise<undefined | string>;
     setError: Dispatch<SetStateAction<string | undefined>>;
     loadFile: (file: File) => Promise<void>;
@@ -20,7 +20,7 @@ export function useFile(
     error: string | undefined;
 } {
     const [file, setFile] = useState<File | undefined>(undefined);
-    const [src, setSrc] = useState<string | undefined>(undefined);
+    const [src, setSrc] = useState<string | undefined | null>(undefined);
     const [error, setError] = useState<string | undefined>(undefined);
 
     const loadFile = async (f: File) => {

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, Card, TextField, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { fb } from "../app/App";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 
 const styles = makeStyles(() => ({
     container: {
@@ -42,6 +42,8 @@ export const Register = () => {
     const [login, setLogin] = useState("");
     const [error, setError] = useState<string | undefined>(undefined);
     const [success, setSuccess] = useState(false);
+    const database = fb.database();
+    const history = useHistory();
 
     const onRegister = () => {
         if (password !== repeatPassword) {
@@ -50,7 +52,7 @@ export const Register = () => {
         }
         fb.auth()
             .createUserWithEmailAndPassword(email, password)
-            .then((result) => {
+            .then(async (result) => {
                 if (result.user) {
                     result.user
                         .updateProfile({
@@ -61,6 +63,8 @@ export const Register = () => {
                             setError(error.message);
                             setSuccess(false);
                         });
+                    await database.ref(`users/${result.user.uid}`).set({ email, login });
+                    history.push("/profile");
                 }
             })
             .catch((error) => {

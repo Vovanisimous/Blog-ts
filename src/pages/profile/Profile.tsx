@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, Card, TextField, Typography } from "@material-ui/core";
-import { fb } from "../app/App";
+import { fb } from "../../app/App";
 import { Alert } from "@material-ui/lab";
-import { useFile } from "../hooks/useFile";
+import { useFile } from "../../hooks/useFile";
+import { v4 } from "uuid";
+import {useHistory} from "react-router-dom";
 
 const styles = makeStyles(() => ({
     container: {
@@ -29,20 +31,23 @@ const styles = makeStyles(() => ({
         height: "400px",
         borderStyle: "solid",
         borderColor: "gray",
-        width: "100%"
+        width: "100%",
     },
     avatarContainer: {
         display: "grid",
         gridTemplateColumns: "1fr",
         gridRowGap: 20,
-        width: 300
+        width: 300,
     },
     inputFile: {
         display: "none",
     },
 }));
 
+const DEFAULT_AVATAR = require("./default-avatar.png");
+
 export const Profile = () => {
+    const history = useHistory();
     const classes = styles();
     const [email, setEmail] = useState("");
     const [emailSuccess, setEmailSuccess] = useState(false);
@@ -56,30 +61,45 @@ export const Profile = () => {
     const [passSuccess, setPassSuccess] = useState(false);
     const [passError, setPassError] = useState<undefined | string>(undefined);
     const inputRef = useRef<HTMLInputElement>(null);
-    const { src, loadFile } = useFile({ whiteList: ["jpg", "png"], maxFileSize: 2097152 });
+    const { src, loadFile, file, setSrc } = useFile({
+        whiteList: ["jpg", "png"],
+        maxFileSize: 2097152,
+    });
+    const database = fb.database();
+    const userId = fb.auth().currentUser?.uid;
+    const currentUser = fb.auth().currentUser;
 
     useEffect(() => {
-        const currentUser = fb.auth().currentUser;
-        if (currentUser && currentUser.email) {
-            setEmail(currentUser.email);
+        if (currentUser) {
+            setSrc(currentUser.photoURL);
+            if (currentUser.email) {
+                setEmail(currentUser.email);
+            }
+            if (currentUser.displayName) {
+                setUserName(currentUser.displayName);
+            }
         }
-        if (currentUser && currentUser.displayName) {
-            setUserName(currentUser.displayName);
-        }
-    }, [fb.auth().currentUser]);
+    }, [currentUser, setUserName, setEmail, setSrc]);
 
     const onEmailChange = () => {
         fb.auth()
             .currentUser?.updateEmail(email)
-            .then(() => setEmailSuccess(true))
+            .then(() => {
+                setEmailSuccess(true)
+                database.ref(`users/${userId}`).update({email})
+            })
             .catch((error) => setEmailError(error.message));
-    };
+};
 
     const onUserNameChange = () => {
         fb.auth()
             .currentUser?.updateProfile({ displayName: userName })
-            .then(() => setUserNameSuccess(true))
+            .then(() => {
+                setUserNameSuccess(true)
+                database.ref(`users/${userId}`).update({login: userName})
+            })
             .catch((error) => setUserNameError(error.message));
+
     };
 
     const onPassChange = () => {
@@ -116,32 +136,60 @@ export const Profile = () => {
         inputRef.current.click();
     };
 
-    const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const onChangeAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.item(0);
         if (!file) {
             return;
         }
-        loadFile(file);
+        await loadFile(file);
+    };
+
+    const goToArticle = () => {
+        history.push("/article");
+    }
+
+    const onUploadAvatar = () => {
+        if (file) {
+            const name = v4();
+            fb.storage()
+                .ref()
+                .child(name)
+                .put(file)
+                .then(async () => {
+                    const image = await fb.storage().ref().child(name).getDownloadURL();
+                    setSrc(image);
+                    database.ref(`users/${userId}`).update({avatar: name});
+                    fb.auth().currentUser?.updateProfile({
+                        photoURL: image
+                    });
+                });
+
+        }
     };
 
     return (
         <div className={classes.container}>
             <div className={classes.avatarContainer}>
-                <img
-                    className={classes.avatar}
-                    src={src}
+                <img className={classes.avatar} src={src || DEFAULT_AVATAR} />
+                <input
+                    type="file"
+                    className={classes.inputFile}
+                    ref={inputRef}
+                    onChange={onChangeAvatar}
                 />
-                <input type="file" className={classes.inputFile} ref={inputRef} onChange={onChange} />
                 <Button variant="contained" color="primary" fullWidth onClick={openWindow}>
                     Choose image
                 </Button>
-                <Button variant="contained" color="primary" fullWidth>
+                <Button variant="contained" color="primary" fullWidth onClick={onUploadAvatar}>
                     Upload
+                </Button>
+                <Button variant="contained" color="primary" fullWidth onClick={goToArticle}>
+                    Write an article
                 </Button>
             </div>
             <div>
                 <Card className={classes.Card} variant="outlined">
-                    <Typography component={"h3"}>Your email:</Typography>
+                    <Typography variant="h5" component="h4">Your email:</Typography>
                     <TextField value={email} onChange={(e) => setEmail(e.target.value)} />
                     <Button variant="contained" color="primary" onClick={onEmailChange}>
                         Change your email
@@ -150,7 +198,7 @@ export const Profile = () => {
                     {emailError && <Alert severity="error">{emailError}</Alert>}
                 </Card>
                 <Card className={classes.Card} variant="outlined">
-                    <Typography component={"h3"}>Your username:</Typography>
+                    <Typography variant="h5" component="h4">Your username:</Typography>
                     <TextField value={userName} onChange={(e) => setUserName(e.target.value)} />
                     <Button variant="contained" color="primary" onClick={onUserNameChange}>
                         Change your username
@@ -161,7 +209,7 @@ export const Profile = () => {
                     {userNameError && <Alert severity="error">{userNameError}</Alert>}
                 </Card>
                 <Card className={classes.Card} variant="outlined">
-                    <Typography component={"h3"}>Change your password:</Typography>
+                    <Typography variant="h5" component="h4">Change your password:</Typography>
                     <TextField
                         type={"password"}
                         value={currentPassword}
