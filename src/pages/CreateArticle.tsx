@@ -4,6 +4,7 @@ import { Button, Card, TextField, Typography } from "@material-ui/core";
 import { fb } from "../app/App";
 import { auth } from "firebase";
 import {kMaxLength} from "buffer";
+import {v4} from "uuid";
 
 const styles = makeStyles(() => ({
     container: {
@@ -32,7 +33,7 @@ export const CreateArticle = () => {
 
     const usersArticle = () => {
         const key = fb.auth().currentUser?.uid;
-        database.ref(`posts/${key}/${name}`).set({ name, text });
+        database.ref(`posts/${key}/${v4()}`).set({ name, text });
     };
 
     return (
