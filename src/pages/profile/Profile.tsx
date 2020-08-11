@@ -93,7 +93,8 @@ export const Profile = () => {
     };
 
     const onUserNameChange = () => {
-        context.updateUser({ login: userName })
+        context
+            .updateUser({ login: userName })
             .then(() => {
                 setUserNameSuccess(true);
                 database.ref(`users/${userId}`).update({ login: userName });

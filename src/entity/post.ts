@@ -14,3 +14,10 @@ export interface IServerPost extends IBasePost {
 export interface IPost extends IBasePost {
     user?: IUser;
 }
+
+export interface IComment {
+    userLogin: string;
+    createdAt: string;
+    comment: string;
+    userAvatar: string;
+}

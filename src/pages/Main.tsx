@@ -4,7 +4,7 @@ import { red } from "@material-ui/core/colors";
 import { IUser } from "../entity/user";
 import { fb } from "../app/App";
 import { IPost, IServerPost } from "../entity/post";
-import { SeparatePost } from "../components/SeparatePost";
+import { SeparatePost } from "../components/Main/SeparatePost";
 
 const styles = makeStyles((theme: Theme) => ({
     container: {
@@ -35,7 +35,9 @@ export const Main = () => {
                 const data = snapshot.val();
                 if (data) {
                     const userData: IUser[] = Object.values(data);
+                    console.log(userData);
                     const keys = Object.keys(data);
+                    console.log(keys);
                     setUsers(userData.map((item, index) => ({ ...item, id: keys[index] })));
                 }
             });

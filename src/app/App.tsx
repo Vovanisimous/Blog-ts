@@ -10,7 +10,7 @@ import { Profile } from "../pages/profile/Profile";
 import { CreateArticle } from "../pages/CreateArticle";
 import { IUser } from "../entity/user";
 import { IAppContext } from "../entity/app";
-import {SeparatePost} from "../components/SeparatePost";
+import {SeparatePost} from "../components/Main/SeparatePost";
 import {Post} from "../pages/Post";
 
 export const fb = firebase;
