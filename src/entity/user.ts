@@ -3,12 +3,6 @@ export interface IUser {
     login: string;
     email: string;
     avatar?: string | null;
+    createdAt?: string;
 }
 
-export interface IUserAt {
-    id: string;
-    login: string;
-    email: string;
-    avatar?: string | null;
-    createdAt: string;
-}

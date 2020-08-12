@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { fb } from "../app/App";
-import {IUserAt} from "../entity/user";
+import {IUser} from "../entity/user";
 import { useParams } from "react-router";
 import {IComment, IServerPost} from "../entity/post";
 import { makeStyles } from "@material-ui/core/styles";
@@ -27,7 +27,7 @@ const styles = makeStyles(() => ({
 export const Post = () => {
     const { id } = useParams();
     const [post, setPost] = useState<IServerPost | undefined>(undefined);
-    const [user, setUser] = useState<IUserAt | undefined>(undefined);
+    const [user, setUser] = useState<IUser | undefined>(undefined);
     const classes = styles();
 
     useEffect(() => {
@@ -43,7 +43,7 @@ export const Post = () => {
             fb.database()
                 .ref(`/users/${post.userId}`)
                 .once("value", async (snapshot) => {
-                    const data: IUserAt = snapshot.val();
+                    const data: IUser = snapshot.val();
                     data.id = post.userId;
                     if (data.avatar) {
                         const avatar = await fb.storage().ref(data.avatar).getDownloadURL();

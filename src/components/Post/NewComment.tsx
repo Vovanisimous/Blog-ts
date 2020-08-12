@@ -5,7 +5,6 @@ import { AppContext, fb } from "../../app/App";
 import moment from "moment";
 import { IComment } from "../../entity/post";
 import { Alert } from "@material-ui/lab";
-import { v4 } from "uuid";
 
 interface IProps {
     postId: string;
