@@ -1,21 +1,19 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { Button, Card, TextField, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { AppContext, fb } from "../../app/App";
-import moment from "moment";
-import { IComment } from "../../entity/post";
 import { Alert } from "@material-ui/lab";
 
 interface IProps {
     postId: string;
 
-    onCreateComment(comment: IComment): void;
+    onCreateComment(value: string): Promise<void>;
 }
 
 const styles = makeStyles(() => ({
     card: {
         width: "100%",
         padding: 15,
+        boxSizing: "border-box",
     },
     commentButton: {
         marginTop: 15,
@@ -24,24 +22,16 @@ const styles = makeStyles(() => ({
 
 export const NewComment = (props: IProps) => {
     const classes = styles();
-    const database = fb.database();
     const [comment, setComment] = useState("");
-    const [commentSuccess, setCommentSuccess] = useState(false)
+    const [commentSuccess, setCommentSuccess] = useState(false);
     const [commentError, setCommentError] = useState(false);
-    const context = useContext(AppContext);
 
     const onUploadComment = () => {
-        const userId = context.user?.id;
-        const createDate = moment().toISOString();
-        const key = fb.database().ref().push().key
         if (comment.length > 0) {
-            database
-                .ref(`comments/${props.postId}/${key}`)
-                .set({ createdAt: createDate, comment, userId })
-                .then(() => {
-                    setCommentSuccess(true)
-                    setComment("");
-                });
+            props.onCreateComment(comment).then(() => {
+                setCommentSuccess(true);
+                setComment("");
+            });
         } else {
             setCommentError(true);
         }
@@ -55,6 +45,7 @@ export const NewComment = (props: IProps) => {
                 fullWidth
                 multiline
                 rows={6}
+                value={comment}
                 onChange={(e) => setComment(e.target.value)}
             />
             <Button

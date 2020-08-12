@@ -4,7 +4,7 @@ import { red } from "@material-ui/core/colors";
 import { IUser } from "../entity/user";
 import { fb } from "../app/App";
 import { IPost, IServerPost } from "../entity/post";
-import { SeparatePost } from "../components/Main/SeparatePost";
+import { SeparatePost } from "../components/SeparatePost";
 
 const styles = makeStyles((theme: Theme) => ({
     container: {
