@@ -35,9 +35,7 @@ export const Main = () => {
                 const data = snapshot.val();
                 if (data) {
                     const userData: IUser[] = Object.values(data);
-                    console.log(userData);
                     const keys = Object.keys(data);
-                    console.log(keys);
                     setUsers(userData.map((item, index) => ({ ...item, id: keys[index] })));
                 }
             });

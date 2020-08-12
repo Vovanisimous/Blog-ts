@@ -27,6 +27,7 @@ export const NewComment = (props: IProps) => {
     const classes = styles();
     const database = fb.database();
     const [comment, setComment] = useState("");
+    const [commentSuccess, setCommentSuccess] = useState(false)
     const [commentError, setCommentError] = useState(false);
     const context = useContext(AppContext);
 
@@ -38,6 +39,7 @@ export const NewComment = (props: IProps) => {
                 .ref(`comments/${props.postId}/${v4()}`)
                 .set({ createdAt: createDate, comment, userId })
                 .then(() => {
+                    setCommentSuccess(true)
                     setComment("");
                 });
         } else {
@@ -64,6 +66,7 @@ export const NewComment = (props: IProps) => {
             >
                 Upload
             </Button>
+            {commentSuccess && <Alert severity="success">Your comment has been added!</Alert>}
             {commentError && <Alert severity="error">Comment field must not be empty!</Alert>}
         </Card>
     );

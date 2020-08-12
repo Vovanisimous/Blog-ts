@@ -26,7 +26,12 @@ export const PostComments = () => {
         fb.database().ref(`comments/${id}`).on("value", (snapshot) => {
             setComments(snapshot.val())
         })
-    }, [])
+        console.log(comments)
+    },[])
+
+    // useEffect( () => {
+    //     fb.database().ref(`users/${comments.}`)
+    // })
 
     return (
         <Card className={classes.card} variant={"outlined"}>
