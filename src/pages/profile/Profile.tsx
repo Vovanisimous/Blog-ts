@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, Card, TextField, Typography } from "@material-ui/core";
-import { fb } from "../../app/App";
+import { AppContext, fb } from "../../app/App";
 import { Alert } from "@material-ui/lab";
 import { useFile } from "../../hooks/useFile";
 import { v4 } from "uuid";
-import {useHistory} from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 const styles = makeStyles(() => ({
     container: {
@@ -67,39 +67,39 @@ export const Profile = () => {
     });
     const database = fb.database();
     const userId = fb.auth().currentUser?.uid;
-    const currentUser = fb.auth().currentUser;
+    const context = useContext(AppContext);
+    const currentUser = context.user;
 
     useEffect(() => {
         if (currentUser) {
-            setSrc(currentUser.photoURL);
+            setSrc(currentUser.avatar);
             if (currentUser.email) {
                 setEmail(currentUser.email);
             }
-            if (currentUser.displayName) {
-                setUserName(currentUser.displayName);
+            if (currentUser.login) {
+                setUserName(currentUser.login);
             }
         }
     }, [currentUser, setUserName, setEmail, setSrc]);
 
     const onEmailChange = () => {
-        fb.auth()
-            .currentUser?.updateEmail(email)
+        context
+            .updateUser({ email })
             .then(() => {
-                setEmailSuccess(true)
-                database.ref(`users/${userId}`).update({email})
+                setEmailSuccess(true);
+                database.ref(`users/${userId}`).update({ email });
             })
             .catch((error) => setEmailError(error.message));
-};
+    };
 
     const onUserNameChange = () => {
-        fb.auth()
-            .currentUser?.updateProfile({ displayName: userName })
+        context
+            .updateUser({ login: userName })
             .then(() => {
-                setUserNameSuccess(true)
-                database.ref(`users/${userId}`).update({login: userName})
+                setUserNameSuccess(true);
+                database.ref(`users/${userId}`).update({ login: userName });
             })
             .catch((error) => setUserNameError(error.message));
-
     };
 
     const onPassChange = () => {
@@ -146,7 +146,7 @@ export const Profile = () => {
 
     const goToArticle = () => {
         history.push("/article");
-    }
+    };
 
     const onUploadAvatar = () => {
         if (file) {
@@ -158,12 +158,11 @@ export const Profile = () => {
                 .then(async () => {
                     const image = await fb.storage().ref().child(name).getDownloadURL();
                     setSrc(image);
-                    database.ref(`users/${userId}`).update({avatar: name});
-                    fb.auth().currentUser?.updateProfile({
-                        photoURL: image
+                    database.ref(`users/${userId}`).update({ avatar: name });
+                    context.updateUser({
+                        avatar: image,
                     });
                 });
-
         }
     };
 
@@ -189,7 +188,9 @@ export const Profile = () => {
             </div>
             <div>
                 <Card className={classes.Card} variant="outlined">
-                    <Typography variant="h5" component="h4">Your email:</Typography>
+                    <Typography variant="h5" component="h4">
+                        Your email:
+                    </Typography>
                     <TextField value={email} onChange={(e) => setEmail(e.target.value)} />
                     <Button variant="contained" color="primary" onClick={onEmailChange}>
                         Change your email
@@ -198,7 +199,9 @@ export const Profile = () => {
                     {emailError && <Alert severity="error">{emailError}</Alert>}
                 </Card>
                 <Card className={classes.Card} variant="outlined">
-                    <Typography variant="h5" component="h4">Your username:</Typography>
+                    <Typography variant="h5" component="h4">
+                        Your username:
+                    </Typography>
                     <TextField value={userName} onChange={(e) => setUserName(e.target.value)} />
                     <Button variant="contained" color="primary" onClick={onUserNameChange}>
                         Change your username
@@ -209,21 +212,26 @@ export const Profile = () => {
                     {userNameError && <Alert severity="error">{userNameError}</Alert>}
                 </Card>
                 <Card className={classes.Card} variant="outlined">
-                    <Typography variant="h5" component="h4">Change your password:</Typography>
+                    <Typography variant="h5" component="h4">
+                        Change your password:
+                    </Typography>
                     <TextField
                         type={"password"}
                         value={currentPassword}
                         onChange={(e) => setCurrentPassword(e.target.value)}
+                        label="Current password"
                     />
                     <TextField
                         type={"password"}
                         value={pass}
                         onChange={(e) => setPass(e.target.value)}
+                        label="New password"
                     />
                     <TextField
                         type={"password"}
                         value={repeatPass}
                         onChange={(e) => setRepeatPass(e.target.value)}
+                        label="Repeat new password"
                     />
                     <Button variant="contained" color="primary" onClick={onPassChange}>
                         Change your password
