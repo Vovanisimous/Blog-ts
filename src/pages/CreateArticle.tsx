@@ -4,8 +4,7 @@ import { Button, TextField, Typography } from "@material-ui/core";
 import { fb } from "../app/App";
 import { v4 } from "uuid";
 import { Alert } from "@material-ui/lab";
-import moment from "moment"
-
+import moment from "moment";
 
 const styles = makeStyles(() => ({
     container: {
@@ -27,7 +26,7 @@ export const CreateArticle = () => {
     const [name, setName] = useState("");
     const [text, setText] = useState("");
     const [postSuccess, setPostSuccess] = useState(false);
-    const [postError, setPostError] = useState(false)
+    const [postError, setPostError] = useState(false);
     const database = fb.database();
     const inputProps = {
         maxLength: 40,
@@ -41,14 +40,14 @@ export const CreateArticle = () => {
         if (name.length > 0 && text.length > 0) {
             database
                 .ref(`posts/${v4()}`)
-                .set({name, text, userId, createdAt: createDate})
+                .set({ name, text, userId, createdAt: createDate })
                 .then(() => {
                     setName("");
                     setText("");
                     setPostSuccess(true);
                 });
-        }else {
-            setPostError(true)
+        } else {
+            setPostError(true);
         }
     };
 
@@ -81,7 +80,7 @@ export const CreateArticle = () => {
                 Upload
             </Button>
             {postSuccess && <Alert severity="success">Your post has been added!</Alert>}
-            {postError && <Alert severity="error">Article name and Article text must not be empty!</Alert>}
+            {postError && <Alert severity="error">{postError }</Alert>}
         </div>
     );
 };

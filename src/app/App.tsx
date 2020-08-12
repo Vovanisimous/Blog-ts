@@ -10,8 +10,8 @@ import { Profile } from "../pages/profile/Profile";
 import { CreateArticle } from "../pages/CreateArticle";
 import { IUser } from "../entity/user";
 import { IAppContext } from "../entity/app";
-import {SeparatePost} from "../components/Main/SeparatePost";
-import {Post} from "../pages/Post";
+import { SeparatePost } from "../components/Main/SeparatePost";
+import { Post } from "../pages/Post";
 
 export const fb = firebase;
 const firebaseConfig = require("../firebase/firebase-config.json");
@@ -27,7 +27,7 @@ export const AppContext = createContext<IAppContext>({
     },
     updateUser(user: Partial<IUser>) {
         return Promise.resolve();
-    }
+    },
 });
 
 function App() {
@@ -60,7 +60,7 @@ function App() {
                         user.updateProfile({
                             photoURL: avatarURL,
                         });
-                        updateUser({avatar: avatarURL});
+                        updateUser({ avatar: avatarURL });
                     });
             }
         });
@@ -78,7 +78,7 @@ function App() {
                 id: user.id,
                 email: value.email || user.email,
                 login: value.login || user.login,
-                avatar: value.avatar || user.avatar
+                avatar: value.avatar || user.avatar,
             });
         }
         const currentUser = fb.auth().currentUser;
@@ -89,19 +89,19 @@ function App() {
             }
             const isLoginChanged = fb.auth().currentUser?.displayName !== value.login;
             if (isLoginChanged && value.login) {
-                return  currentUser.updateProfile({
-                    displayName: value.login
+                return currentUser.updateProfile({
+                    displayName: value.login,
                 });
             }
             const isAvatarChanged = fb.auth().currentUser?.photoURL !== value.avatar;
             if (isAvatarChanged && value.avatar) {
                 return currentUser.updateProfile({
-                    photoURL: value.avatar
+                    photoURL: value.avatar,
                 });
             }
         }
         return Promise.resolve();
-    }
+    };
 
     return (
         <AppContext.Provider value={{ auth, user, updateUser }}>

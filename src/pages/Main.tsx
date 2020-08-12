@@ -8,9 +8,8 @@ import { SeparatePost } from "../components/Main/SeparatePost";
 
 const styles = makeStyles((theme: Theme) => ({
     container: {
-        height: "100vh",
         position: "relative",
-        marginTop: "80px",
+        marginTop: 80,
         padding: 50,
     },
     avatar: {

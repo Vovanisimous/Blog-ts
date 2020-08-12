@@ -15,7 +15,7 @@ interface IProps {
 
 const styles = makeStyles(() => ({
     card: {
-        width: "99%",
+        width: "100%",
         padding: 15,
     },
     commentButton: {
@@ -34,9 +34,10 @@ export const NewComment = (props: IProps) => {
     const onUploadComment = () => {
         const userId = context.user?.id;
         const createDate = moment().toISOString();
+        const key = fb.database().ref().push().key
         if (comment.length > 0) {
             database
-                .ref(`comments/${props.postId}/${v4()}`)
+                .ref(`comments/${props.postId}/${key}`)
                 .set({ createdAt: createDate, comment, userId })
                 .then(() => {
                     setCommentSuccess(true)
