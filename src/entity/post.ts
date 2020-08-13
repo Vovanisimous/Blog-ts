@@ -16,8 +16,7 @@ export interface IPost extends IBasePost {
 }
 
 export interface IComment {
-    userLogin: string;
+    userId: string;
     createdAt: string;
     comment: string;
-    userAvatar: string;
 }

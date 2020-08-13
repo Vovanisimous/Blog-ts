@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Avatar, Card, CardHeader } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { IUser } from "../../entity/user";
+import { IUser } from "../entity/user";
 import moment from "moment";
 
 interface IProps {
@@ -14,7 +14,7 @@ const styles = makeStyles(() => ({
     },
 }));
 
-const DEFAULT_AVATAR = require("../../pages/profile/default-avatar.png");
+const DEFAULT_AVATAR = require("./default-avatar.png");
 
 export const PostHeader = (props: IProps) => {
     const classes = styles();

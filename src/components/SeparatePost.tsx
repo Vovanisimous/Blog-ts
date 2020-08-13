@@ -2,9 +2,9 @@ import React, {useEffect, useState} from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Avatar, Card, CardContent, CardHeader, Typography } from "@material-ui/core";
 import { red } from "@material-ui/core/colors";
-import { IPost } from "../../entity/post";
+import { IPost } from "../entity/post";
 import { Link } from "react-router-dom";
-import {fb} from "../../app/App";
+import {fb} from "../app/App";
 import moment from "moment";
 
 interface IProps {

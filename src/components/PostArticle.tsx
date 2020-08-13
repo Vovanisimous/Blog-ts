@@ -1,5 +1,5 @@
 import React from "react";
-import { IServerPost } from "../../entity/post";
+import { IServerPost } from "../entity/post";
 import { Card, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -11,6 +11,7 @@ const styles = makeStyles(() => ({
     card: {
         width: "100%",
         padding: 15,
+        boxSizing: "border-box",
     },
     text: {
         overflow: "hidden",
