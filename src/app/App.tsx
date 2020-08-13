@@ -124,7 +124,7 @@ function App() {
                 <Route path={"/register"} component={Register} />
                 <PrivateRoute auth={auth} path={"/profile"} render={() => <Profile />} />
                 <PrivateRoute auth={auth} path={"/article"} render={() => <CreateArticle />} />
-                <Route path={"/posts/:id"} component={Post} />
+                <Route path={"/posts/:creatorId/:postId"} component={Post} />
             </Switch>
         </AppContext.Provider>
     );

@@ -3,7 +3,7 @@ import { makeStyles, Theme } from "@material-ui/core/styles";
 import { red } from "@material-ui/core/colors";
 import { IUser } from "../entity/user";
 import { fb } from "../app/App";
-import { IPost, IServerPost } from "../entity/post";
+import { IPost, IPosts, IServerPost } from "../entity/post";
 import { SeparatePost } from "../components/SeparatePost";
 
 const styles = makeStyles((theme: Theme) => ({
@@ -43,9 +43,12 @@ export const Main = () => {
             .on("value", (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
-                    const postData: IServerPost[] = Object.values(data);
-                    const keys = Object.keys(data);
-                    setServerPosts(postData.map((item, index) => ({ ...item, id: keys[index] })));
+                    const allPosts: Array<{ [key: string]: IServerPost }> = Object.values(data);
+                    const userPosts: IServerPost[] = [];
+                    allPosts.forEach((item) =>
+                        Object.values(item).forEach((item) => userPosts.push(item)),
+                    );
+                    setServerPosts(userPosts);
                 }
             });
     }, []);

@@ -26,7 +26,7 @@ const styles = makeStyles(() => ({
 }));
 
 export const Post = () => {
-    const { id } = useParams();
+    const { postId, creatorId } = useParams();
     const [post, setPost] = useState<IServerPost | undefined>(undefined);
     const [user, setUser] = useState<IUser | undefined>(undefined);
     const [comments, setComments] = useState<IComment[]>([]);
@@ -35,7 +35,7 @@ export const Post = () => {
 
     useEffect(() => {
         fb.database()
-            .ref(`/posts/${id}`)
+            .ref(`/posts/${creatorId    }/${postId}`)
             .once("value", (snapshot) => {
                 setPost(snapshot.val());
             });
@@ -60,7 +60,7 @@ export const Post = () => {
 
     useEffect(() => {
         fb.database()
-            .ref(`comments/${id}`)
+            .ref(`comments/${postId}`)
             .on("value", (snapshot) => {
                 const commentsObject = snapshot.val();
                 if (commentsObject) {
@@ -75,7 +75,7 @@ export const Post = () => {
         const createDate = moment().toISOString();
         const key = fb.database().ref().push().key;
         return fb.database()
-            .ref(`comments/${id}/${key}`)
+            .ref(`comments/${postId}/${key}`)
             .set({ createdAt: createDate, comment: value, userId, commentId: key })
 
     };
@@ -84,7 +84,7 @@ export const Post = () => {
         <div className={classes.container}>
             <PostHeader user={user} />
             <PostArticle post={post} />
-            <NewComment postId={String(id)} onCreateComment={onCreateComment} />
+            <NewComment postId={String(postId)} onCreateComment={onCreateComment} />
             <PostComments comments={comments} />
         </div>
     );

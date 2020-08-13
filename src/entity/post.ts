@@ -21,3 +21,6 @@ export interface IComment {
     comment: string;
     commentId: string;
 }
+export interface IPosts {
+    posts?: IPost;
+}
