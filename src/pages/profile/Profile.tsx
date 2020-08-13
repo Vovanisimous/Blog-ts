@@ -1,34 +1,46 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, Card, TextField, Typography } from "@material-ui/core";
+import {
+    Button,
+    Card, IconButton,
+    Table, TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    Typography
+} from "@material-ui/core";
 import { AppContext, fb } from "../../app/App";
 import { Alert } from "@material-ui/lab";
 import { useFile } from "../../hooks/useFile";
 import { v4 } from "uuid";
 import { useHistory } from "react-router-dom";
+import {IServerPost} from "../../entity/post";
+import {Delete, Edit} from "@material-ui/icons";
+import moment from "moment";
 
 const styles = makeStyles(() => ({
     container: {
         marginTop: "64px",
         position: "relative",
         display: "grid",
-        gridTemplateColumns: "300px 1fr",
-        justifyItems: "center",
+        gridTemplateColumns: "1fr",
+        justifyItems: "flex-end",
         gridColumnGap: 40,
-        padding: 50,
+        padding: "20px 100px 20px 50px",
         alignItems: "flex-start",
     },
     Card: {
         padding: 20,
         width: 600,
-        gridArea: "email",
         display: "grid",
         gridTemplateColumns: "1fr",
         gridRowGap: 20,
         marginTop: "30px",
     },
     avatar: {
-        height: "400px",
+        height: "350px",
         borderStyle: "solid",
         borderColor: "gray",
         width: "100%",
@@ -38,10 +50,20 @@ const styles = makeStyles(() => ({
         gridTemplateColumns: "1fr",
         gridRowGap: 20,
         width: 300,
+        position: "fixed",
     },
     inputFile: {
         display: "none",
     },
+    informationContainer: {
+        marginRight: 15,
+    },
+    tableContainer: {
+        marginTop: 10,
+    },
+    postName: {
+        overflow: "hidden",
+    }
 }));
 
 const DEFAULT_AVATAR = require("./default-avatar.png");
@@ -60,6 +82,7 @@ export const Profile = () => {
     const [currentPassword, setCurrentPassword] = useState("");
     const [passSuccess, setPassSuccess] = useState(false);
     const [passError, setPassError] = useState<undefined | string>(undefined);
+    const [userPosts, setUserPosts] = useState<IServerPost[]>([])
     const inputRef = useRef<HTMLInputElement>(null);
     const { src, loadFile, file, setSrc } = useFile({
         whiteList: ["jpg", "png"],
@@ -81,6 +104,15 @@ export const Profile = () => {
             }
         }
     }, [currentUser, setUserName, setEmail, setSrc]);
+
+    useEffect( () => {
+        database.ref(`posts/${userId}`).on("value", (snapshot) => {
+            const userPostsData = snapshot.val();
+            const postsData:IServerPost[] = Object.values(userPostsData);
+            setUserPosts(postsData)
+            console.log(userPosts)
+        })
+    }, [])
 
     const onEmailChange = () => {
         context
@@ -186,7 +218,7 @@ export const Profile = () => {
                     Write an article
                 </Button>
             </div>
-            <div>
+            <div className={classes.informationContainer}>
                 <Card className={classes.Card} variant="outlined">
                     <Typography variant="h5" component="h4">
                         Your email:
@@ -241,6 +273,36 @@ export const Profile = () => {
                     )}
                     {passError && <Alert severity="error">{passError}</Alert>}
                 </Card>
+                <TableContainer className={classes.tableContainer}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell align="center">Posts</TableCell>
+                                <TableCell align="center">Creation Date</TableCell>
+                                <TableCell align="center">Edit</TableCell>
+                                <TableCell align="center">Delete</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {userPosts.map( (row) => (
+                                <TableRow key={row.name}>
+                                    <TableCell align="center" className={classes.postName}>{row.name}</TableCell>
+                                    <TableCell align="center">{moment(row.createdAt).format("MMMM Do YYYY, h:mm:ss a")}</TableCell>
+                                    <TableCell align="center">
+                                        <IconButton>
+                                            <Edit />
+                                        </IconButton>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                        <IconButton>
+                                            <Delete />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </div>
         </div>
     );
