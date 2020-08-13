@@ -76,7 +76,7 @@ export const Post = () => {
         const key = fb.database().ref().push().key;
         return fb.database()
             .ref(`comments/${id}/${key}`)
-            .set({ createdAt: createDate, comment: value, userId })
+            .set({ createdAt: createDate, comment: value, userId, commentId: key })
 
     };
 

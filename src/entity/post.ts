@@ -19,4 +19,5 @@ export interface IComment {
     userId: string;
     createdAt: string;
     comment: string;
+    commentId: string;
 }
