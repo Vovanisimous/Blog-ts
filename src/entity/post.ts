@@ -20,7 +20,3 @@ export interface IComment {
     createdAt: string;
     comment: string;
 }
-
-
-
-

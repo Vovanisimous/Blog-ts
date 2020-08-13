@@ -29,7 +29,7 @@ const styles = makeStyles(() => ({
     },
 }));
 
-const DEFAULT_AVATAR = require("../pages/profile/default-avatar.png");
+const DEFAULT_AVATAR = require("./default-avatar.png");
 
 export const Header = (props: IProps) => {
     const classes = styles();
