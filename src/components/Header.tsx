@@ -87,7 +87,7 @@ export const Header = (props: IProps) => {
                             <img
                                 className={classes.avatar}
                                 src={
-                                    currentUser
+                                    currentUser?.avatar
                                         ? currentUser.avatar
                                         : DEFAULT_AVATAR
                                 }

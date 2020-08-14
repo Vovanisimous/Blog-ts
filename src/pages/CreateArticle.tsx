@@ -37,10 +37,11 @@ export const CreateArticle = () => {
         // TODO: сделать проверку на пустые значения полей {DONE!}
         // TODO: сделать проверку на уже существующую статью с таким же именем
         const createDate = moment().toISOString();
+        const postId = v4();
         if (name.length > 0 && text.length > 0) {
             database
-                .ref(`posts/${v4()}`)
-                .set({ name, text, userId, createdAt: createDate })
+                .ref(`posts/${userId}/${postId}`)
+                .set({ name, text, userId, createdAt: createDate, id: postId })
                 .then(() => {
                     setName("");
                     setText("");

@@ -58,7 +58,7 @@ export const SeparatePost = (props: IProps) => {
     }, [])
 
     return (
-        <Link to={`/posts/${post.id}`} className={classes.link}>
+        <Link to={`/posts/${post.user?.id}/${post.id}`} className={classes.link}>
             <Card className={classes.card} variant={"outlined"}>
                 <CardHeader
                     avatar={

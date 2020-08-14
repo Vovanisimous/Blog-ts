@@ -1,34 +1,40 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Button, Card, TextField, Typography } from "@material-ui/core";
+import {
+    Button,
+    Card,
+    TextField,
+    Typography
+} from "@material-ui/core";
 import { AppContext, fb } from "../../app/App";
 import { Alert } from "@material-ui/lab";
 import { useFile } from "../../hooks/useFile";
 import { v4 } from "uuid";
 import { useHistory } from "react-router-dom";
+import {IServerPost} from "../../entity/post";
+import {PostsTable} from "../../components/PostsTable";
 
 const styles = makeStyles(() => ({
     container: {
         marginTop: "64px",
         position: "relative",
         display: "grid",
-        gridTemplateColumns: "300px 1fr",
-        justifyItems: "center",
+        gridTemplateColumns: "1fr",
+        justifyItems: "flex-end",
         gridColumnGap: 40,
-        padding: 50,
+        padding: "20px 100px 20px 50px",
         alignItems: "flex-start",
     },
     Card: {
         padding: 20,
         width: 600,
-        gridArea: "email",
         display: "grid",
         gridTemplateColumns: "1fr",
         gridRowGap: 20,
         marginTop: "30px",
     },
     avatar: {
-        height: "400px",
+        height: "350px",
         borderStyle: "solid",
         borderColor: "gray",
         width: "100%",
@@ -38,10 +44,20 @@ const styles = makeStyles(() => ({
         gridTemplateColumns: "1fr",
         gridRowGap: 20,
         width: 300,
+        position: "fixed",
     },
     inputFile: {
         display: "none",
     },
+    informationContainer: {
+        marginRight: 15,
+    },
+    tableContainer: {
+        marginTop: 10,
+    },
+    postName: {
+        overflow: "hidden",
+    }
 }));
 
 const DEFAULT_AVATAR = require("./default-avatar.png");
@@ -60,6 +76,7 @@ export const Profile = () => {
     const [currentPassword, setCurrentPassword] = useState("");
     const [passSuccess, setPassSuccess] = useState(false);
     const [passError, setPassError] = useState<undefined | string>(undefined);
+    const [userPosts, setUserPosts] = useState<IServerPost[]>([])
     const inputRef = useRef<HTMLInputElement>(null);
     const { src, loadFile, file, setSrc } = useFile({
         whiteList: ["jpg", "png"],
@@ -81,6 +98,14 @@ export const Profile = () => {
             }
         }
     }, [currentUser, setUserName, setEmail, setSrc]);
+
+    useEffect( () => {
+        database.ref(`posts/${userId}`).on("value", (snapshot) => {
+            const userPostsData = snapshot.val();
+            const postsData:IServerPost[] = Object.values(userPostsData);
+            setUserPosts(postsData)
+        })
+    }, [])
 
     const onEmailChange = () => {
         context
@@ -166,6 +191,10 @@ export const Profile = () => {
         }
     };
 
+    const onDeletePost = (value: string): any => {
+        database.ref(`posts/${userId}/${value}`).remove()
+    }
+
     return (
         <div className={classes.container}>
             <div className={classes.avatarContainer}>
@@ -186,7 +215,7 @@ export const Profile = () => {
                     Write an article
                 </Button>
             </div>
-            <div>
+            <div className={classes.informationContainer}>
                 <Card className={classes.Card} variant="outlined">
                     <Typography variant="h5" component="h4">
                         Your email:
@@ -241,6 +270,7 @@ export const Profile = () => {
                     )}
                     {passError && <Alert severity="error">{passError}</Alert>}
                 </Card>
+                <PostsTable userPosts={userPosts} onDeletePost={onDeletePost}/>
             </div>
         </div>
     );
