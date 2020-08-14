@@ -102,8 +102,12 @@ export const Profile = () => {
     useEffect( () => {
         database.ref(`posts/${userId}`).on("value", (snapshot) => {
             const userPostsData = snapshot.val();
-            const postsData:IServerPost[] = Object.values(userPostsData);
-            setUserPosts(postsData)
+            if (userPostsData) {
+                const postsData:IServerPost[] = Object.values(userPostsData);
+                setUserPosts(postsData)
+            } else {
+                setUserPosts([]);
+            }
         })
     }, [])
 
@@ -191,7 +195,7 @@ export const Profile = () => {
         }
     };
 
-    const onDeletePost = (value: string): any => {
+    const onDeletePost = (value: string) => {
         database.ref(`posts/${userId}/${value}`).remove()
     }
 

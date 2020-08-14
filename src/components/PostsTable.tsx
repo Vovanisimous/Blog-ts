@@ -16,7 +16,7 @@ import { IServerPost } from "../entity/post";
 interface IUserPosts {
     userPosts: IServerPost[];
 
-    onDeletePost(value: string): any;
+    onDeletePost(value: string): void;
 }
 
 const styles = makeStyles(() => ({
@@ -29,10 +29,6 @@ const styles = makeStyles(() => ({
 }));
 export const PostsTable = (props: IUserPosts) => {
     const classes = styles();
-
-    const onDeletePosts = (value:string): any => {
-        props.onDeletePost(value)
-    }
 
     return (
         <TableContainer className={classes.tableContainer}>
@@ -60,7 +56,7 @@ export const PostsTable = (props: IUserPosts) => {
                                 </IconButton>
                             </TableCell>
                             <TableCell align="center">
-                                <IconButton onClick={onDeletePosts(row.id)}>
+                                <IconButton onClick={() => props.onDeletePost(row.id)}>
                                     <Delete />
                                 </IconButton>
                             </TableCell>
