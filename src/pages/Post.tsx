@@ -35,7 +35,7 @@ export const Post = () => {
 
     useEffect(() => {
         fb.database()
-            .ref(`/posts/${creatorId    }/${postId}`)
+            .ref(`/posts/${creatorId}/${postId}`)
             .once("value", (snapshot) => {
                 setPost(snapshot.val());
             });
@@ -74,10 +74,10 @@ export const Post = () => {
         const userId = context.user?.id;
         const createDate = moment().toISOString();
         const key = fb.database().ref().push().key;
-        return fb.database()
+        return fb
+            .database()
             .ref(`comments/${postId}/${key}`)
-            .set({ createdAt: createDate, comment: value, userId, commentId: key })
-
+            .set({ createdAt: createDate, comment: value, userId, commentId: key });
     };
 
     return (

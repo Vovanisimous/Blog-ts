@@ -2,12 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import {
     Button,
-    Card, IconButton,
-    Table, TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
+    Card,
     TextField,
     Typography
 } from "@material-ui/core";
@@ -17,8 +12,7 @@ import { useFile } from "../../hooks/useFile";
 import { v4 } from "uuid";
 import { useHistory } from "react-router-dom";
 import {IServerPost} from "../../entity/post";
-import {Delete, Edit} from "@material-ui/icons";
-import moment from "moment";
+import {PostsTable} from "../../components/PostsTable";
 
 const styles = makeStyles(() => ({
     container: {
@@ -110,7 +104,6 @@ export const Profile = () => {
             const userPostsData = snapshot.val();
             const postsData:IServerPost[] = Object.values(userPostsData);
             setUserPosts(postsData)
-            console.log(userPosts)
         })
     }, [])
 
@@ -198,6 +191,10 @@ export const Profile = () => {
         }
     };
 
+    const onDeletePost = (value: string): any => {
+        database.ref(`posts/${userId}/${value}`).remove()
+    }
+
     return (
         <div className={classes.container}>
             <div className={classes.avatarContainer}>
@@ -273,36 +270,7 @@ export const Profile = () => {
                     )}
                     {passError && <Alert severity="error">{passError}</Alert>}
                 </Card>
-                <TableContainer className={classes.tableContainer}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell align="center">Posts</TableCell>
-                                <TableCell align="center">Creation Date</TableCell>
-                                <TableCell align="center">Edit</TableCell>
-                                <TableCell align="center">Delete</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {userPosts.map( (row) => (
-                                <TableRow key={row.name}>
-                                    <TableCell align="center" className={classes.postName}>{row.name}</TableCell>
-                                    <TableCell align="center">{moment(row.createdAt).format("MMMM Do YYYY, h:mm:ss a")}</TableCell>
-                                    <TableCell align="center">
-                                        <IconButton>
-                                            <Edit />
-                                        </IconButton>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <IconButton>
-                                            <Delete />
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
+                <PostsTable userPosts={userPosts} onDeletePost={onDeletePost}/>
             </div>
         </div>
     );
