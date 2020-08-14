@@ -17,6 +17,7 @@ interface IUserPosts {
     userPosts: IServerPost[];
 
     onDeletePost(value: string): void;
+    onEditPost(value:string): void;
 }
 
 const styles = makeStyles(() => ({
@@ -51,7 +52,7 @@ export const PostsTable = (props: IUserPosts) => {
                                 {moment(row.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
                             </TableCell>
                             <TableCell align="center">
-                                <IconButton>
+                                <IconButton onClick={() => props.onEditPost(row.id)}>
                                     <Edit />
                                 </IconButton>
                             </TableCell>

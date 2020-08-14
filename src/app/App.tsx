@@ -13,6 +13,7 @@ import { IAppContext } from "../entity/app";
 import { Post } from "../pages/Post";
 import { PublicRoute } from "../components/PublicRoute";
 import { PrivateRoute } from "../components/PrivateRoute";
+import { EditArticle } from "../pages/EditArticle";
 
 export const fb = firebase;
 const firebaseConfig = require("../firebase/firebase-config.json");
@@ -124,6 +125,7 @@ function App() {
                 <Route path={"/register"} component={Register} />
                 <PrivateRoute auth={auth} path={"/profile"} render={() => <Profile />} />
                 <PrivateRoute auth={auth} path={"/article"} render={() => <CreateArticle />} />
+                <PrivateRoute auth={auth} path={"/edit/:postId"} render={() => <EditArticle />} />
                 <Route path={"/posts/:creatorId/:postId"} component={Post} />
             </Switch>
         </AppContext.Provider>

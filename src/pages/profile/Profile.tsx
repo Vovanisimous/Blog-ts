@@ -199,6 +199,10 @@ export const Profile = () => {
         database.ref(`posts/${userId}/${value}`).remove()
     }
 
+    const onEditPost = (value:string) => {
+        history.push(`/edit/${value}`);
+    }
+
     return (
         <div className={classes.container}>
             <div className={classes.avatarContainer}>
@@ -274,7 +278,7 @@ export const Profile = () => {
                     )}
                     {passError && <Alert severity="error">{passError}</Alert>}
                 </Card>
-                <PostsTable userPosts={userPosts} onDeletePost={onDeletePost}/>
+                <PostsTable userPosts={userPosts} onDeletePost={onDeletePost} onEditPost={onEditPost}/>
             </div>
         </div>
     );
