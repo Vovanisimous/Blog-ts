@@ -4,22 +4,13 @@ import {PostsTable} from "../../components/PostsTable";
 import {makeStyles} from "@material-ui/core/styles";
 import {useParams} from "react-router";
 import {fb} from "../../app/App";
-import {IUserData} from "../../entity/user";
+import {IUser, IUserData} from "../../entity/user";
 import {IServerPost} from "../../entity/post";
 import {UserPostsTable} from "./UserPostsTable";
+import {Layout} from "../../components/Layout";
 
 
 const styles = makeStyles(() => ({
-    container: {
-        marginTop: "64px",
-        position: "relative",
-        display: "grid",
-        gridTemplateColumns: "1fr",
-        justifyItems: "flex-end",
-        gridColumnGap: 40,
-        padding: "20px 100px 20px 50px",
-        alignItems: "flex-start",
-    },
     Card: {
         padding: 20,
         width: 600,
@@ -51,18 +42,17 @@ const DEFAULT_AVATAR = require("./default-avatar.png");
 export const UserProfile = () => {
     const classes = styles();
     const {userId} = useParams();
-    const [userAvatar, setUserAvatar] = useState("");
     const [userPosts, setUserPosts] = useState<IServerPost[]>([]);
-    const [userLogin, setUserlogin] = useState("")
+    const [user, setUser] = useState<IUser | undefined>(undefined)
 
     useEffect( () => {
         fb.database().ref(`users/${userId}`).on("value", async (snapshot) => {
-            const userData:IUserData = snapshot.val();
+            const userData: IUser = snapshot.val();
+            userData.id = userId;
             if (userData && userData.avatar) {
-                const avatar:string = await fb.storage().ref(userData.avatar).getDownloadURL()
-                setUserAvatar(avatar)
-                setUserlogin(userData.login)
-            };
+                userData.avatar = await fb.storage().ref(userData.avatar).getDownloadURL();
+            }
+            setUser(userData)
         })
     }, [])
 
@@ -79,18 +69,18 @@ export const UserProfile = () => {
     },[])
 
     return (
-        <div className={classes.container}>
+        <Layout>
             <div className={classes.avatarContainer}>
-                <img className={classes.avatar} src={userAvatar || DEFAULT_AVATAR} />
+                <img className={classes.avatar} src={user?.avatar || DEFAULT_AVATAR} />
             </div>
             <div className={classes.informationContainer}>
                 <Card className={classes.Card} variant="outlined">
                     <Typography variant="h5" component="h4">
-                        {userLogin}
+                        {user?.login}
                     </Typography>
                 </Card>
                 <UserPostsTable userPosts={userPosts}/>
             </div>
-        </div>
+        </Layout>
     )
 }

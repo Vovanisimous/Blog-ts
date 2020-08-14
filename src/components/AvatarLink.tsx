@@ -19,7 +19,7 @@ export const AvatarLink = (props:IAvatar) => {
     const context = useContext(AppContext);
 
     return (
-        <Link to={fb.auth().currentUser?.uid === props.userId ? `/profile` : `users/${props.userId}`}>
+        <Link to={context.user?.id === props.userId ? `/profile` : `/users/${props.userId}`}>
             <img
                 className={classes.avatar}
                 src={

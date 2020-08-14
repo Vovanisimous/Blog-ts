@@ -12,6 +12,7 @@ import moment from "moment";
 import { Delete, Edit } from "@material-ui/icons";
 import { makeStyles } from "@material-ui/core/styles";
 import { IServerPost } from "../entity/post";
+import {Link} from "react-router-dom";
 
 interface IUserPosts {
     userPosts: IServerPost[];
@@ -46,7 +47,7 @@ export const PostsTable = (props: IUserPosts) => {
                     {props.userPosts.map((row) => (
                         <TableRow key={row.name}>
                             <TableCell align="center" className={classes.postName}>
-                                {row.name}
+                                <Link to={`/posts/${row.userId}/${row.id}`}>{row.name}</Link>
                             </TableCell>
                             <TableCell align="center">
                                 {moment(row.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
