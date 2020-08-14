@@ -1,12 +1,12 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, TextField, Typography } from "@material-ui/core";
 import { fb } from "../app/App";
 import { Alert } from "@material-ui/lab";
 import moment from "moment";
 import { useParams } from "react-router";
-import {IServerPost} from "../entity/post";
-import {useHistory} from "react-router-dom";
+import { IServerPost } from "../entity/post";
+import { useHistory } from "react-router-dom";
 
 const styles = makeStyles(() => ({
     container: {
@@ -37,15 +37,13 @@ export const EditArticle = () => {
         maxLength: 40,
     };
 
-    useEffect( () => {
-        database
-            .ref(`posts/${userId}/${postId}`)
-            .once("value", async (snapshot) => {
-                const editedPostData:IServerPost = snapshot.val();
-                setName(editedPostData.name);
-                setText(editedPostData.text);
-            });
-    }, [])
+    useEffect(() => {
+        database.ref(`posts/${userId}/${postId}`).once("value", async (snapshot) => {
+            const editedPostData: IServerPost = snapshot.val();
+            setName(editedPostData.name);
+            setText(editedPostData.text);
+        });
+    }, []);
 
     const editArticle = () => {
         const createDate = moment().toISOString();

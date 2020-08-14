@@ -17,6 +17,7 @@ import { red } from "@material-ui/core/colors";
 import moment from "moment";
 import { Delete, Edit } from "@material-ui/icons";
 import { useParams } from "react-router";
+import {AvatarLink} from "./AvatarLink";
 
 interface IProps {
     comment?: IComment;
@@ -61,11 +62,11 @@ export const SeparateComment = (props: IProps) => {
     const [userAvatar, setUserAvatar] = useState("");
     const [commentEditField, setCommentEditField] = useState(false);
     const [editedComment, setEditedComment] = useState("");
+    const [commentUserId, setCommentUserId] = useState("")
     const classes = styles();
     const context = useContext(AppContext);
     const { id } = useParams();
     const userId = context.user?.id;
-    const commentUserId = props.comment?.userId;
     const commentId = props.comment?.commentId;
 
     useEffect(() => {
@@ -81,6 +82,9 @@ export const SeparateComment = (props: IProps) => {
                     setUserAvatar(DEFAULT_AVATAR);
                 }
             });
+        if (props.comment && props.comment.userId) {
+            setCommentUserId(props.comment.userId)
+        }
     }, []);
 
     const onDeleteComment = () => {
@@ -109,7 +113,7 @@ export const SeparateComment = (props: IProps) => {
     return (
         <Card className={classes.card} variant={"outlined"}>
             <CardHeader
-                avatar={<Avatar aria-label="recipe" className={classes.avatar} src={userAvatar} />}
+                avatar={<AvatarLink avatarLink={userAvatar} userLink={commentUserId}/>}
                 title={userLogin}
                 subheader={moment(props.comment?.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
                 action={

@@ -1,12 +1,12 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Avatar, Card, CardContent, CardHeader, Typography } from "@material-ui/core";
 import { red } from "@material-ui/core/colors";
 import { IPost } from "../entity/post";
 import { Link } from "react-router-dom";
-import {fb} from "../app/App";
+import { fb } from "../app/App";
 import moment from "moment";
-import {AvatarLink} from "./AvatarLink";
+import { AvatarLink } from "./AvatarLink";
 
 interface IProps {
     post: IPost;
@@ -22,19 +22,19 @@ const styles = makeStyles(() => ({
         gridTemplateColumns: "1fr",
         gridRowGap: 20,
         width: "100%",
-        boxSizing: "border-box"
+        boxSizing: "border-box",
     },
     link: {
         textDecoration: "none",
-        display: "grid"
+        display: "grid",
     },
     text: {
         overflow: "hidden",
-        textOverflow: "ellipsis"
+        textOverflow: "ellipsis",
     },
     content: {
-        overflow: "hidden"
-    }
+        overflow: "hidden",
+    },
 }));
 
 const DEFAULT_AVATAR = require("./default-avatar.png");
@@ -42,41 +42,32 @@ const DEFAULT_AVATAR = require("./default-avatar.png");
 export const SeparatePost = (props: IProps) => {
     const classes = styles();
     const { post } = props;
-    const [userImage, setUserImage] = useState("")
-    const [userId, setUserId] = useState("")
-
+    const [userImage, setUserImage] = useState("");
 
     const getAvatar = async () => {
-        const user = post.user
+        const user = post.user;
         if (user && user.avatar) {
             const avatarURL = await fb.storage().ref(user.avatar).getDownloadURL();
             setUserImage(avatarURL);
         } else {
             setUserImage(DEFAULT_AVATAR);
         }
-    }
+    };
 
-    useEffect( () => {
+    useEffect(() => {
         getAvatar();
-        if (post.user && post.user.id) {
-            setUserId(post.user.id);
-        }
-    }, [])
+    }, []);
 
     return (
         <Link to={`/posts/${post.user?.id}/${post.id}`} className={classes.link}>
             <Card className={classes.card} variant={"outlined"}>
                 <CardHeader
-                    avatar={
-                        <AvatarLink avatar={userImage} userId={userId}/>
-                    }
+                    avatar={<AvatarLink avatarLink={userImage} userLink={props.post.id} />}
                     title={post.name}
                     subheader={moment(post.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
                 />
                 <CardContent className={classes.content}>
-                    <Typography className={classes.text}>
-                        {post.text}
-                    </Typography>
+                    <Typography className={classes.text}>{post.text}</Typography>
                 </CardContent>
             </Card>
         </Link>

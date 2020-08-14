@@ -1,7 +1,7 @@
-import React, {FC} from "react";
-import {makeStyles} from "@material-ui/core/styles";
+import React, { FC } from "react";
+import { makeStyles } from "@material-ui/core/styles";
 
-const styles = makeStyles( () => ({
+const styles = makeStyles(() => ({
     container: {
         marginTop: "64px",
         position: "relative",
@@ -11,13 +11,11 @@ const styles = makeStyles( () => ({
         gridColumnGap: 40,
         padding: "20px 100px 20px 50px",
         alignItems: "flex-start",
-    }
-}))
+    },
+}));
 
 export const Layout: FC = (props) => {
-    const classes = styles()
+    const classes = styles();
 
-    return (
-        <div className={classes.container}>{props.children}</div>
-    )
-}
+    return <div className={classes.container}>{props.children}</div>;
+};

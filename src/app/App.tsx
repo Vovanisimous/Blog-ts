@@ -14,7 +14,7 @@ import { Post } from "../pages/Post";
 import { PublicRoute } from "../components/PublicRoute";
 import { PrivateRoute } from "../components/PrivateRoute";
 import { EditArticle } from "../pages/EditArticle";
-import {UserProfile} from "../pages/user-profile/UserProfile";
+import { UserProfile } from "../pages/user-profile/UserProfile";
 
 export const fb = firebase;
 const firebaseConfig = require("../firebase/firebase-config.json");
