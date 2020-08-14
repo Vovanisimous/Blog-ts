@@ -3,6 +3,7 @@ import { Avatar, Card, CardHeader } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { IUser } from "../entity/user";
 import moment from "moment";
+import {AvatarLink} from "./AvatarLink";
 
 interface IProps {
     user?: IUser;
@@ -19,10 +20,12 @@ const DEFAULT_AVATAR = require("./default-avatar.png");
 export const PostHeader = (props: IProps) => {
     const classes = styles();
     const [userImage, setUserImage] = useState("");
+    const [userId, setUserId] = useState("")
 
     useEffect(() => {
         if (props.user && props.user.avatar) {
             setUserImage(props.user.avatar);
+            setUserId(props.user.id)
         } else {
             setUserImage(DEFAULT_AVATAR);
         }
@@ -31,7 +34,7 @@ export const PostHeader = (props: IProps) => {
     return (
         <Card className={classes.card} variant={"outlined"}>
             <CardHeader
-                avatar={<Avatar aria-label="recipe" src={userImage} />}
+                avatar={<AvatarLink avatar={userImage} userId={userId}/>}
                 title={props.user?.login}
                 subheader={moment(props.user?.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
             />

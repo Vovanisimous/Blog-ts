@@ -6,6 +6,7 @@ import { IPost } from "../entity/post";
 import { Link } from "react-router-dom";
 import {fb} from "../app/App";
 import moment from "moment";
+import {AvatarLink} from "./AvatarLink";
 
 interface IProps {
     post: IPost;
@@ -42,6 +43,8 @@ export const SeparatePost = (props: IProps) => {
     const classes = styles();
     const { post } = props;
     const [userImage, setUserImage] = useState("")
+    const [userId, setUserId] = useState("")
+
 
     const getAvatar = async () => {
         const user = post.user
@@ -55,6 +58,9 @@ export const SeparatePost = (props: IProps) => {
 
     useEffect( () => {
         getAvatar();
+        if (post.user && post.user.id) {
+            setUserId(post.user.id);
+        }
     }, [])
 
     return (
@@ -62,7 +68,7 @@ export const SeparatePost = (props: IProps) => {
             <Card className={classes.card} variant={"outlined"}>
                 <CardHeader
                     avatar={
-                        <Avatar aria-label="recipe" className={classes.avatar} src={userImage} />
+                        <AvatarLink avatar={userImage} userId={userId}/>
                     }
                     title={post.name}
                     subheader={moment(post.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
