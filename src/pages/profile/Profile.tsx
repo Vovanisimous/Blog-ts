@@ -13,17 +13,13 @@ import { v4 } from "uuid";
 import { useHistory } from "react-router-dom";
 import {IServerPost} from "../../entity/post";
 import {PostsTable} from "../../components/PostsTable";
+import {Layout} from "../../components/Layout";
 
 const styles = makeStyles(() => ({
     container: {
-        marginTop: "64px",
-        position: "relative",
-        display: "grid",
-        gridTemplateColumns: "1fr",
         justifyItems: "flex-end",
         gridColumnGap: 40,
         padding: "20px 100px 20px 50px",
-        alignItems: "flex-start",
     },
     Card: {
         padding: 20,
@@ -102,8 +98,12 @@ export const Profile = () => {
     useEffect( () => {
         database.ref(`posts/${userId}`).on("value", (snapshot) => {
             const userPostsData = snapshot.val();
-            const postsData:IServerPost[] = Object.values(userPostsData);
-            setUserPosts(postsData)
+            if (userPostsData) {
+                const postsData:IServerPost[] = Object.values(userPostsData);
+                setUserPosts(postsData)
+            } else {
+                setUserPosts([]);
+            }
         })
     }, [])
 
@@ -191,12 +191,16 @@ export const Profile = () => {
         }
     };
 
-    const onDeletePost = (value: string): any => {
+    const onDeletePost = (value: string) => {
         database.ref(`posts/${userId}/${value}`).remove()
     }
 
+    const onEditPost = (value:string) => {
+        history.push(`/edit/${value}`);
+    }
+
     return (
-        <div className={classes.container}>
+        <Layout className={classes.container}>
             <div className={classes.avatarContainer}>
                 <img className={classes.avatar} src={src || DEFAULT_AVATAR} />
                 <input
@@ -270,8 +274,8 @@ export const Profile = () => {
                     )}
                     {passError && <Alert severity="error">{passError}</Alert>}
                 </Card>
-                <PostsTable userPosts={userPosts} onDeletePost={onDeletePost}/>
+                <PostsTable userPosts={userPosts} onDeletePost={onDeletePost} onEditPost={onEditPost}/>
             </div>
-        </div>
+        </Layout>
     );
 };

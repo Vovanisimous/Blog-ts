@@ -1,6 +1,5 @@
 import React from "react";
 import {
-    IconButton,
     Table,
     TableBody,
     TableCell,
@@ -9,16 +8,12 @@ import {
     TableRow,
 } from "@material-ui/core";
 import moment from "moment";
-import { Delete, Edit } from "@material-ui/icons";
 import { makeStyles } from "@material-ui/core/styles";
-import { IServerPost } from "../entity/post";
+import { IServerPost } from "../../entity/post";
 import {Link} from "react-router-dom";
 
 interface IUserPosts {
     userPosts: IServerPost[];
-
-    onDeletePost(value: string): void;
-    onEditPost(value:string): void;
 }
 
 const styles = makeStyles(() => ({
@@ -29,7 +24,7 @@ const styles = makeStyles(() => ({
         overflow: "hidden",
     },
 }));
-export const PostsTable = (props: IUserPosts) => {
+export const UserPostsTable = (props: IUserPosts) => {
     const classes = styles();
 
     return (
@@ -39,8 +34,6 @@ export const PostsTable = (props: IUserPosts) => {
                     <TableRow>
                         <TableCell align="center">Posts</TableCell>
                         <TableCell align="center">Creation Date</TableCell>
-                        <TableCell align="center">Edit</TableCell>
-                        <TableCell align="center">Delete</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -51,16 +44,6 @@ export const PostsTable = (props: IUserPosts) => {
                             </TableCell>
                             <TableCell align="center">
                                 {moment(row.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
-                            </TableCell>
-                            <TableCell align="center">
-                                <IconButton onClick={() => props.onEditPost(row.id)}>
-                                    <Edit />
-                                </IconButton>
-                            </TableCell>
-                            <TableCell align="center">
-                                <IconButton onClick={() => props.onDeletePost(row.id)}>
-                                    <Delete />
-                                </IconButton>
                             </TableCell>
                         </TableRow>
                     ))}

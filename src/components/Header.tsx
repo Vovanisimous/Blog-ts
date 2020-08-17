@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from "react";
 import { AppBar, IconButton, MenuItem, Menu, Toolbar, Typography, Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { Link, useHistory } from "react-router-dom";
-import { AppContext, fb } from "../app/App";
+import { AppContext } from "../app/App";
 
 interface IProps {
     onLogout?(): void;

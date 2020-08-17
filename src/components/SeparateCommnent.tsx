@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import {
-    Avatar,
     Button,
     Card,
     CardContent,
@@ -17,6 +16,7 @@ import { red } from "@material-ui/core/colors";
 import moment from "moment";
 import { Delete, Edit } from "@material-ui/icons";
 import { useParams } from "react-router";
+import {AvatarLink} from "./AvatarLink";
 
 interface IProps {
     comment?: IComment;
@@ -62,10 +62,8 @@ export const SeparateComment = (props: IProps) => {
     const [commentEditField, setCommentEditField] = useState(false);
     const [editedComment, setEditedComment] = useState("");
     const classes = styles();
-    const context = useContext(AppContext);
     const { id } = useParams();
-    const userId = context.user?.id;
-    const commentUserId = props.comment?.userId;
+    const userId = fb.auth().currentUser?.uid
     const commentId = props.comment?.commentId;
 
     useEffect(() => {
@@ -109,12 +107,12 @@ export const SeparateComment = (props: IProps) => {
     return (
         <Card className={classes.card} variant={"outlined"}>
             <CardHeader
-                avatar={<Avatar aria-label="recipe" className={classes.avatar} src={userAvatar} />}
+                avatar={<AvatarLink avatarLink={userAvatar} userLink={props.comment?.userId}/>}
                 title={userLogin}
                 subheader={moment(props.comment?.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
                 action={
                     <>
-                        {userId === commentUserId && (
+                        {userId === props.comment?.userId && (
                             <div className={classes.buttons}>
                                 <IconButton className={classes.button} onClick={onEditComment}>
                                     <Edit />
