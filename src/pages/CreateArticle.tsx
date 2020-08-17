@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, TextField, Typography } from "@material-ui/core";
-import { fb } from "../app/App";
+import { AppContext, fb } from "../app/App";
 import { v4 } from "uuid";
 import { Alert } from "@material-ui/lab";
 import moment from "moment";
+import { useDatabase } from "../hooks/useDatabase";
+import { IServerPost } from "../entity/post";
+import { useHistory } from "react-router-dom";
 
 const styles = makeStyles(() => ({
     container: {
@@ -27,26 +30,31 @@ export const CreateArticle = () => {
     const [text, setText] = useState("");
     const [postSuccess, setPostSuccess] = useState(false);
     const [postError, setPostError] = useState(false);
-    const database = fb.database();
+    const database = useDatabase<IServerPost>();
+    const context = useContext(AppContext);
+    const history = useHistory();
     const inputProps = {
         maxLength: 40,
     };
 
     const createArticle = () => {
-        const userId = fb.auth().currentUser?.uid;
-        // TODO: сделать проверку на пустые значения полей {DONE!}
-        // TODO: сделать проверку на уже существующую статью с таким же именем
+        const userId = context.user?.id;
         const createDate = moment().toISOString();
         const postId = v4();
+        const data = {
+            id: postId,
+            name,
+            text,
+            createdAt: createDate,
+            userId,
+        };
         if (name.length > 0 && text.length > 0) {
-            database
-                .ref(`posts/${userId}/${postId}`)
-                .set({ name, text, userId, createdAt: createDate, id: postId })
-                .then(() => {
-                    setName("");
-                    setText("");
-                    setPostSuccess(true);
-                });
+            database.addData(data, `posts/${userId}/${postId}`).then(() => {
+                setName("");
+                setText("");
+                setPostSuccess(true);
+                history.push(`/posts/${userId}/${postId}`);
+            });
         } else {
             setPostError(true);
         }
@@ -81,7 +89,7 @@ export const CreateArticle = () => {
                 Upload
             </Button>
             {postSuccess && <Alert severity="success">Your post has been added!</Alert>}
-            {postError && <Alert severity="error">{postError }</Alert>}
+            {postError && <Alert severity="error">{postError}</Alert>}
         </div>
     );
 };
