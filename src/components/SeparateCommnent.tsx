@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import {
-    Avatar,
     Button,
     Card,
     CardContent,
@@ -63,7 +62,6 @@ export const SeparateComment = (props: IProps) => {
     const [commentEditField, setCommentEditField] = useState(false);
     const [editedComment, setEditedComment] = useState("");
     const classes = styles();
-    const context = useContext(AppContext);
     const { id } = useParams();
     const userId = fb.auth().currentUser?.uid
     const commentId = props.comment?.commentId;
