@@ -4,8 +4,8 @@ import {makeStyles} from "@material-ui/core/styles";
 import {AppContext, fb} from "../app/App";
 
 interface IProps {
-    avatarLink: string;
-    userLink: string;
+    avatarLink?: string | null;
+    userLink?: string;
 }
 
 const styles = makeStyles( () => ({

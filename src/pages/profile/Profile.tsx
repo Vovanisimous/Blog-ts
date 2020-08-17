@@ -16,6 +16,11 @@ import {PostsTable} from "../../components/PostsTable";
 import {Layout} from "../../components/Layout";
 
 const styles = makeStyles(() => ({
+    container: {
+        justifyItems: "flex-end",
+        gridColumnGap: 40,
+        padding: "20px 100px 20px 50px",
+    },
     Card: {
         padding: 20,
         width: 600,
@@ -195,7 +200,7 @@ export const Profile = () => {
     }
 
     return (
-        <Layout>
+        <Layout className={classes.container}>
             <div className={classes.avatarContainer}>
                 <img className={classes.avatar} src={src || DEFAULT_AVATAR} />
                 <input

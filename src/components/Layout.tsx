@@ -1,5 +1,10 @@
 import React, { FC } from "react";
 import { makeStyles } from "@material-ui/core/styles";
+import classNames from "classnames";
+
+interface IProps {
+    className?: string;
+}
 
 const styles = makeStyles(() => ({
     container: {
@@ -7,15 +12,12 @@ const styles = makeStyles(() => ({
         position: "relative",
         display: "grid",
         gridTemplateColumns: "1fr",
-        justifyItems: "flex-end",
-        gridColumnGap: 40,
-        padding: "20px 100px 20px 50px",
         alignItems: "flex-start",
     },
 }));
 
-export const Layout: FC = (props) => {
+export const Layout: FC<IProps> = (props) => {
     const classes = styles();
 
-    return <div className={classes.container}>{props.children}</div>;
+    return <div className={classNames(classes.container, props.className)}>{props.children}</div>;
 };

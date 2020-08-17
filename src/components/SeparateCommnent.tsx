@@ -62,11 +62,10 @@ export const SeparateComment = (props: IProps) => {
     const [userAvatar, setUserAvatar] = useState("");
     const [commentEditField, setCommentEditField] = useState(false);
     const [editedComment, setEditedComment] = useState("");
-    const [commentUserId, setCommentUserId] = useState("")
     const classes = styles();
     const context = useContext(AppContext);
     const { id } = useParams();
-    const userId = context.user?.id;
+    const userId = fb.auth().currentUser?.uid
     const commentId = props.comment?.commentId;
 
     useEffect(() => {
@@ -82,9 +81,6 @@ export const SeparateComment = (props: IProps) => {
                     setUserAvatar(DEFAULT_AVATAR);
                 }
             });
-        if (props.comment && props.comment.userId) {
-            setCommentUserId(props.comment.userId)
-        }
     }, []);
 
     const onDeleteComment = () => {
@@ -113,12 +109,12 @@ export const SeparateComment = (props: IProps) => {
     return (
         <Card className={classes.card} variant={"outlined"}>
             <CardHeader
-                avatar={<AvatarLink avatarLink={userAvatar} userLink={commentUserId}/>}
+                avatar={<AvatarLink avatarLink={userAvatar} userLink={props.comment?.userId}/>}
                 title={userLogin}
                 subheader={moment(props.comment?.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
                 action={
                     <>
-                        {userId === commentUserId && (
+                        {userId === props.comment?.userId && (
                             <div className={classes.buttons}>
                                 <IconButton className={classes.button} onClick={onEditComment}>
                                     <Edit />

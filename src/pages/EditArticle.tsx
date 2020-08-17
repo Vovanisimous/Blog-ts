@@ -7,18 +7,12 @@ import moment from "moment";
 import { useParams } from "react-router";
 import { IServerPost } from "../entity/post";
 import { useHistory } from "react-router-dom";
+import {Layout} from "../components/Layout";
 
 const styles = makeStyles(() => ({
     container: {
-        marginTop: "64px",
-        position: "relative",
-        display: "grid",
-        gridTemplateColumns: "1fr",
         justifyItems: "center",
-        padding: 150,
-        paddingTop: "50px",
-        paddingBottom: "50px",
-        alignItems: "flex-start",
+        padding: "50px 150px 50px 150px",
         gridRowGap: 20,
     },
 }));
@@ -63,7 +57,7 @@ export const EditArticle = () => {
     };
 
     return (
-        <div className={classes.container}>
+        <Layout className={classes.container}>
             <Typography variant="h3" component="h1">
                 Edit your article
             </Typography>
@@ -92,6 +86,6 @@ export const EditArticle = () => {
             </Button>
             {postSuccess && <Alert severity="success">Your post has been edited!</Alert>}
             {postError && <Alert severity="error">{postError}</Alert>}
-        </div>
+        </Layout>
     );
 };

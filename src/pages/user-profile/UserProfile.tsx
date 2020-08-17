@@ -1,17 +1,20 @@
-import React, {useEffect, useState} from "react";
-import {Card, Typography} from "@material-ui/core";
-import {PostsTable} from "../../components/PostsTable";
-import {makeStyles} from "@material-ui/core/styles";
-import {useParams} from "react-router";
-import {fb} from "../../app/App";
-import {IUser, IUserData} from "../../entity/user";
-import {IServerPost} from "../../entity/post";
-import {UserPostsTable} from "./UserPostsTable";
-import {Layout} from "../../components/Layout";
-
+import React, { useEffect, useState } from "react";
+import { Card, Typography } from "@material-ui/core";
+import { makeStyles } from "@material-ui/core/styles";
+import { useParams } from "react-router";
+import { fb } from "../../app/App";
+import { IUser } from "../../entity/user";
+import { IServerPost } from "../../entity/post";
+import { UserPostsTable } from "./UserPostsTable";
+import { Layout } from "../../components/Layout";
 
 const styles = makeStyles(() => ({
-    Card: {
+    container: {
+        justifyItems: "flex-end",
+        gridColumnGap: 40,
+        padding: "20px 100px 20px 50px",
+    },
+    card: {
         padding: 20,
         width: 600,
         display: "grid",
@@ -41,46 +44,50 @@ const DEFAULT_AVATAR = require("./default-avatar.png");
 
 export const UserProfile = () => {
     const classes = styles();
-    const {userId} = useParams();
+    const { userId } = useParams();
     const [userPosts, setUserPosts] = useState<IServerPost[]>([]);
-    const [user, setUser] = useState<IUser | undefined>(undefined)
+    const [user, setUser] = useState<IUser | undefined>(undefined);
 
-    useEffect( () => {
-        fb.database().ref(`users/${userId}`).on("value", async (snapshot) => {
-            const userData: IUser = snapshot.val();
-            userData.id = userId;
-            if (userData && userData.avatar) {
-                userData.avatar = await fb.storage().ref(userData.avatar).getDownloadURL();
-            }
-            setUser(userData)
-        })
-    }, [])
+    useEffect(() => {
+        fb.database()
+            .ref(`users/${userId}`)
+            .on("value", async (snapshot) => {
+                const userData: IUser = snapshot.val();
+                userData.id = userId;
+                if (userData && userData.avatar) {
+                    userData.avatar = await fb.storage().ref(userData.avatar).getDownloadURL();
+                }
+                setUser(userData);
+            });
+    }, []);
 
-    useEffect( () => {
-        fb.database().ref(`posts/${userId}`).on("value", (snapshot) => {
-            const userPostsData = snapshot.val();
-            if (userPostsData) {
-                const postsData:IServerPost[] = Object.values(userPostsData);
-                setUserPosts(postsData)
-            } else {
-                setUserPosts([]);
-            }
-        })
-    },[])
+    useEffect(() => {
+        fb.database()
+            .ref(`posts/${userId}`)
+            .on("value", (snapshot) => {
+                const userPostsData = snapshot.val();
+                if (userPostsData) {
+                    const postsData: IServerPost[] = Object.values(userPostsData);
+                    setUserPosts(postsData);
+                } else {
+                    setUserPosts([]);
+                }
+            });
+    }, []);
 
     return (
-        <Layout>
+        <Layout className={classes.container}>
             <div className={classes.avatarContainer}>
                 <img className={classes.avatar} src={user?.avatar || DEFAULT_AVATAR} />
             </div>
             <div className={classes.informationContainer}>
-                <Card className={classes.Card} variant="outlined">
+                <Card className={classes.card} variant="outlined">
                     <Typography variant="h5" component="h4">
                         {user?.login}
                     </Typography>
                 </Card>
-                <UserPostsTable userPosts={userPosts}/>
+                <UserPostsTable userPosts={userPosts} />
             </div>
         </Layout>
-    )
-}
+    );
+};
