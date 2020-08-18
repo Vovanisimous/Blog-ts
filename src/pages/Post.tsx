@@ -2,13 +2,14 @@ import React, { useContext, useEffect, useState } from "react";
 import { AppContext, fb } from "../app/App";
 import { IUser } from "../entity/user";
 import { useParams } from "react-router";
-import { IComment, IServerPost } from "../entity/post";
+import { IComment, IPost, IServerPost } from "../entity/post";
 import { makeStyles } from "@material-ui/core/styles";
 import { PostHeader } from "../components/PostHeader";
 import { PostArticle } from "../components/PostArticle";
 import { PostComments } from "../components/PostComments";
 import { NewComment } from "../components/NewComment";
 import moment from "moment";
+import { useDatabase } from "../hooks/useDatabase";
 
 const styles = makeStyles(() => ({
     container: {
@@ -27,57 +28,49 @@ const styles = makeStyles(() => ({
 
 export const Post = () => {
     const { postId, creatorId } = useParams();
-    const [post, setPost] = useState<IServerPost | undefined>(undefined);
-    const [user, setUser] = useState<IUser | undefined>(undefined);
     const [comments, setComments] = useState<IComment[]>([]);
     const context = useContext(AppContext);
     const classes = styles();
+    const { data: post, fetchData: fetchPost } = useDatabase<IServerPost>();
+    const { data: user, setData: setUser, fetchData: fetchUser } = useDatabase<IUser>();
+    const { data: commentsData, fetchData: fetchCommentsData } = useDatabase<IComment[]>()
+    const database = useDatabase<IComment>()
 
     useEffect(() => {
-        fb.database()
-            .ref(`/posts/${creatorId}/${postId}`)
-            .once("value", (snapshot) => {
-                setPost(snapshot.val());
-            });
-    }, []);
+        fetchPost(`/posts/${creatorId}/${postId}`, "once");
+        fetchUser(`/users/${post?.userId}`, "once");
+        fetchCommentsData(`comments/${postId}`, "on")
+    }, [postId, creatorId, postId]);
 
     useEffect(() => {
-        if (post) {
-            fb.database()
-                .ref(`/users/${post.userId}`)
-                .once("value", async (snapshot) => {
-                    const data: IUser = snapshot.val();
-                    data.id = post.userId;
-                    if (data.avatar) {
-                        const avatar = await fb.storage().ref(data.avatar).getDownloadURL();
-                        data.avatar = avatar;
-                    }
-                    data.createdAt = post.createdAt;
-                    setUser(data);
-                });
+        fetchAvatar()}
+    , [user]);
+
+    const fetchAvatar = async () => {
+        if (user?.avatar) {
+            const avatar = await fb.storage().ref(user.avatar).getDownloadURL();
+            setUser({...user, avatar})
         }
-    }, [post]);
+    }
 
     useEffect(() => {
-        fb.database()
-            .ref(`comments/${postId}`)
-            .on("value", (snapshot) => {
-                const commentsObject = snapshot.val();
-                if (commentsObject) {
-                    const commentsObjectData: IComment[] = Object.values(commentsObject);
-                    setComments(commentsObjectData.reverse());
-                }
-            });
-    }, []);
+        if (commentsData) {
+            const commentsObjectData: IComment[] = Object.values(commentsData);
+            setComments(commentsObjectData.reverse());
+        };
+    }, [commentsData]);
 
     const onCreateComment = (value: string) => {
         const userId = context.user?.id;
         const createDate = moment().toISOString();
         const key = fb.database().ref().push().key;
-        return fb
-            .database()
-            .ref(`comments/${postId}/${key}`)
-            .set({ createdAt: createDate, comment: value, userId, commentId: key });
+        const data = {
+            createdAt: createDate,
+            comment: value,
+            userId,
+            commentId: key
+        }
+        return database.addData(data, `comments/${postId}/${key}`)
     };
 
     return (

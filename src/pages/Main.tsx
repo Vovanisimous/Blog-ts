@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { red } from "@material-ui/core/colors";
 import { IUser } from "../entity/user";
-import { fb } from "../app/App";
-import { IPost, IPosts, IServerPost } from "../entity/post";
+import { IPost, IServerPost } from "../entity/post";
 import { SeparatePost } from "../components/SeparatePost";
+import { useDatabase } from "../hooks/useDatabase";
 
 const styles = makeStyles((theme: Theme) => ({
     container: {
@@ -26,32 +26,30 @@ export const Main = () => {
     const [posts, setPosts] = useState<IPost[]>([]);
     const [serverPosts, setServerPosts] = useState<IServerPost[]>([]);
     const [users, setUsers] = useState<IUser[]>([]);
+    const { data: usersData, fetchData: fetchUsersData } = useDatabase<IUser[]>()
+    const { data: serverPostsData, fetchData: fetchServerPostsData } = useDatabase<IServerPost>()
 
     useEffect(() => {
-        fb.database()
-            .ref("/users")
-            .on("value", (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    const userData: IUser[] = Object.values(data);
-                    const keys = Object.keys(data);
-                    setUsers(userData.map((item, index) => ({ ...item, id: keys[index] })));
-                }
-            });
-        fb.database()
-            .ref("/posts")
-            .on("value", (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    const allPosts: Array<{ [key: string]: IServerPost }> = Object.values(data);
-                    const userPosts: IServerPost[] = [];
-                    allPosts.forEach((item) =>
-                        Object.values(item).forEach((item) => userPosts.push(item)),
-                    );
-                    setServerPosts(userPosts);
-                }
-            });
-    }, []);
+        fetchUsersData("/users", "on")
+        fetchServerPostsData("/posts", "on")
+    }, [])
+
+    useEffect ( () => {
+        if(usersData) {
+            const userData: IUser[] = Object.values(usersData);
+            const keys = Object.keys(usersData);
+            setUsers(userData.map((item, index) => ({ ...item, id: keys[index] })));
+        }
+
+        if(serverPostsData) {
+            const allPosts: Array<{ [key: string]: IServerPost }> = Object.values(serverPostsData);
+            const userPosts: IServerPost[] = [];
+            allPosts.forEach((item) =>
+                Object.values(item).forEach((item) => userPosts.push(item)),
+            );
+            setServerPosts(userPosts);
+        }
+    }, [usersData, serverPostsData])
 
     useEffect(() => {
         const postList: IPost[] = serverPosts

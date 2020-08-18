@@ -8,7 +8,7 @@ export interface IBasePost {
 }
 
 export interface IServerPost extends IBasePost {
-    userId: string;
+    userId?: string;
 }
 
 export interface IPost extends IBasePost {
@@ -16,10 +16,10 @@ export interface IPost extends IBasePost {
 }
 
 export interface IComment {
-    userId: string;
+    userId?: string;
     createdAt: string;
     comment: string;
-    commentId: string;
+    commentId: string | null;
 }
 export interface IPosts {
     posts?: IPost;

@@ -14,6 +14,7 @@ import { useHistory } from "react-router-dom";
 import {IServerPost} from "../../entity/post";
 import {PostsTable} from "../../components/PostsTable";
 import {Layout} from "../../components/Layout";
+import { useDatabase } from "../../hooks/useDatabase";
 
 const styles = makeStyles(() => ({
     container: {
@@ -78,10 +79,11 @@ export const Profile = () => {
         whiteList: ["jpg", "png"],
         maxFileSize: 2097152,
     });
-    const database = fb.database();
-    const userId = fb.auth().currentUser?.uid;
+    const database = useDatabase();
     const context = useContext(AppContext);
+    const userId = context.user?.id;
     const currentUser = context.user;
+    const { data: post, fetchData: fetchPost } = useDatabase<IServerPost>();
 
     useEffect(() => {
         if (currentUser) {
@@ -96,23 +98,24 @@ export const Profile = () => {
     }, [currentUser, setUserName, setEmail, setSrc]);
 
     useEffect( () => {
-        database.ref(`posts/${userId}`).on("value", (snapshot) => {
-            const userPostsData = snapshot.val();
-            if (userPostsData) {
-                const postsData:IServerPost[] = Object.values(userPostsData);
-                setUserPosts(postsData)
-            } else {
-                setUserPosts([]);
-            }
-        })
-    }, [])
+        fetchPost(`posts/${userId}`, "on");
+    }, [userId])
+
+    useEffect ( () => {
+        if (post) {
+            const postsData:IServerPost[] = Object.values(post);
+            setUserPosts(postsData)
+        } else {
+            setUserPosts([]);
+        }
+    }, [post])
 
     const onEmailChange = () => {
         context
             .updateUser({ email })
             .then(() => {
                 setEmailSuccess(true);
-                database.ref(`users/${userId}`).update({ email });
+                database.updateData({email}, `users/${userId}`)
             })
             .catch((error) => setEmailError(error.message));
     };
@@ -122,7 +125,7 @@ export const Profile = () => {
             .updateUser({ login: userName })
             .then(() => {
                 setUserNameSuccess(true);
-                database.ref(`users/${userId}`).update({ login: userName });
+                database.updateData({login: userName}, `users/${userId}`)
             })
             .catch((error) => setUserNameError(error.message));
     };
@@ -175,15 +178,15 @@ export const Profile = () => {
 
     const onUploadAvatar = () => {
         if (file) {
-            const name = v4();
+            const avatarName = v4();
             fb.storage()
                 .ref()
-                .child(name)
+                .child(avatarName)
                 .put(file)
                 .then(async () => {
-                    const image = await fb.storage().ref().child(name).getDownloadURL();
+                    const image = await fb.storage().ref().child(avatarName).getDownloadURL();
                     setSrc(image);
-                    database.ref(`users/${userId}`).update({ avatar: name });
+                    database.updateData({avatar: avatarName}, `users/${userId}`);
                     context.updateUser({
                         avatar: image,
                     });
@@ -192,7 +195,7 @@ export const Profile = () => {
     };
 
     const onDeletePost = (value: string) => {
-        database.ref(`posts/${userId}/${value}`).remove()
+        database.removeData(`posts/${userId}/${value}`);
     }
 
     const onEditPost = (value:string) => {

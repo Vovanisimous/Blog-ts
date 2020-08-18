@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { Button, Card, TextField, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { fb } from "../app/App";
 import { Link, useHistory } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { useDatabase } from "../hooks/useDatabase";
+import { IUserData } from "../entity/user";
 
 const styles = makeStyles(() => ({
     container: {
@@ -42,16 +44,20 @@ export const Register = () => {
     const [login, setLogin] = useState("");
     const [error, setError] = useState<string | undefined>(undefined);
     const [success, setSuccess] = useState(false);
-    const database = fb.database();
+    const database = useDatabase<IUserData>();
     const history = useHistory();
+    const auth = useAuth();
 
     const onRegister = () => {
+        const data = {
+            email,
+            login
+        }
         if (password !== repeatPassword) {
             setError("Passwords aren't equal!");
             return;
         }
-        fb.auth()
-            .createUserWithEmailAndPassword(email, password)
+        auth.onRegister(email, login, password)
             .then(async (result) => {
                 if (result.user) {
                     result.user
@@ -63,7 +69,7 @@ export const Register = () => {
                             setError(error.message);
                             setSuccess(false);
                         });
-                    await database.ref(`users/${result.user.uid}`).set({ email, login });
+                    await database.addData(data, `users/${result.user.uid}`)
                     history.push("/profile");
                 }
             })

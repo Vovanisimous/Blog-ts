@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, TextField, Typography } from "@material-ui/core";
-import { fb } from "../app/App";
+import { AppContext } from "../app/App";
 import { Alert } from "@material-ui/lab";
 import moment from "moment";
 import { useParams } from "react-router";
 import { IServerPost } from "../entity/post";
 import { useHistory } from "react-router-dom";
-import {Layout} from "../components/Layout";
+import { Layout } from "../components/Layout";
+import { useDatabase } from "../hooks/useDatabase";
 
 const styles = makeStyles(() => ({
     container: {
@@ -24,33 +25,41 @@ export const EditArticle = () => {
     const [text, setText] = useState("");
     const [postSuccess, setPostSuccess] = useState(false);
     const [postError, setPostError] = useState(false);
-    const database = fb.database();
-    const userId = fb.auth().currentUser?.uid;
+    const { data: editedPostData, fetchData: fetchEditedPostData, addData } = useDatabase<IServerPost>();
+    const context = useContext(AppContext);
+    const userId = context.user?.id
     const { postId } = useParams();
     const inputProps = {
         maxLength: 40,
     };
 
     useEffect(() => {
-        database.ref(`posts/${userId}/${postId}`).once("value", async (snapshot) => {
-            const editedPostData: IServerPost = snapshot.val();
+        fetchEditedPostData(`posts/${userId}/${postId}`, "once");
+    }, [])
+
+    useEffect(() => {
+        if (editedPostData) {
             setName(editedPostData.name);
             setText(editedPostData.text);
-        });
-    }, []);
+        }
+    }, [editedPostData]);
 
     const editArticle = () => {
         const createDate = moment().toISOString();
+        const data = {
+            name,
+            text,
+            userId,
+            createdAt: createDate,
+            id: postId,
+        };
         if (name.length > 0 && text.length > 0) {
-            database
-                .ref(`posts/${userId}/${postId}`)
-                .set({ name, text, userId, createdAt: createDate, id: postId })
-                .then(() => {
-                    setName("");
-                    setText("");
-                    setPostSuccess(true);
-                    history.push(`/posts/${userId}/${postId}`);
-                });
+            addData(data, `/posts/${userId}/${postId}`).then(() => {
+                setName("");
+                setText("");
+                setPostSuccess(true);
+                history.push(`/posts/${userId}/${postId}`);
+            });
         } else {
             setPostError(true);
         }
