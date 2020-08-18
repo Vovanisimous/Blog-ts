@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { red } from "@material-ui/core/colors";
 import { IUser } from "../entity/user";
-import { fb } from "../app/App";
-import { IComment, IPost, IPosts, IServerPost } from "../entity/post";
+import { IPost, IServerPost } from "../entity/post";
 import { SeparatePost } from "../components/SeparatePost";
 import { useDatabase } from "../hooks/useDatabase";
 

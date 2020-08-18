@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, TextField, Typography } from "@material-ui/core";
-import { fb } from "../app/App";
+import { AppContext } from "../app/App";
 import { Alert } from "@material-ui/lab";
 import moment from "moment";
 import { useParams } from "react-router";
@@ -25,9 +25,9 @@ export const EditArticle = () => {
     const [text, setText] = useState("");
     const [postSuccess, setPostSuccess] = useState(false);
     const [postError, setPostError] = useState(false);
-    const { data: editedPostData, fetchData: fetchEditedPostData } = useDatabase<IServerPost>()
-    const database = useDatabase<IServerPost>();
-    const userId = fb.auth().currentUser?.uid;
+    const { data: editedPostData, fetchData: fetchEditedPostData, addData } = useDatabase<IServerPost>();
+    const context = useContext(AppContext);
+    const userId = context.user?.id
     const { postId } = useParams();
     const inputProps = {
         maxLength: 40,
@@ -54,7 +54,7 @@ export const EditArticle = () => {
             id: postId,
         };
         if (name.length > 0 && text.length > 0) {
-            database.addData(data, `/posts/${userId}/${postId}`).then(() => {
+            addData(data, `/posts/${userId}/${postId}`).then(() => {
                 setName("");
                 setText("");
                 setPostSuccess(true);
