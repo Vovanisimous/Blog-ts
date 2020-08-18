@@ -25,6 +25,7 @@ export const EditArticle = () => {
     const [text, setText] = useState("");
     const [postSuccess, setPostSuccess] = useState(false);
     const [postError, setPostError] = useState(false);
+    const { data: editedPostData, fetchData: fetchEditedPostData } = useDatabase<IServerPost>()
     const database = useDatabase<IServerPost>();
     const userId = fb.auth().currentUser?.uid;
     const { postId } = useParams();
@@ -33,14 +34,15 @@ export const EditArticle = () => {
     };
 
     useEffect(() => {
-        fb.database()
-            .ref(`posts/${userId}/${postId}`)
-            .once("value", async (snapshot) => {
-                const editedPostData: IServerPost = snapshot.val();
-                setName(editedPostData.name);
-                setText(editedPostData.text);
-            });
-    }, []);
+        fetchEditedPostData(`posts/${userId}/${postId}`, "once");
+    }, [])
+
+    useEffect(() => {
+        if (editedPostData) {
+            setName(editedPostData.name);
+            setText(editedPostData.text);
+        }
+    }, [editedPostData]);
 
     const editArticle = () => {
         const createDate = moment().toISOString();
