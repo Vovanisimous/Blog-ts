@@ -17,6 +17,7 @@ import moment from "moment";
 import { Delete, Edit } from "@material-ui/icons";
 import { useParams } from "react-router";
 import {AvatarLink} from "./AvatarLink";
+import { useDatabase } from "../hooks/useDatabase";
 
 interface IProps {
     comment?: IComment;
@@ -61,10 +62,20 @@ export const SeparateComment = (props: IProps) => {
     const [userAvatar, setUserAvatar] = useState("");
     const [commentEditField, setCommentEditField] = useState(false);
     const [editedComment, setEditedComment] = useState("");
+    const { data: userIdData, fetchData: fetchUserIdData } = useDatabase<IUser>();
     const classes = styles();
     const { id } = useParams();
-    const userId = fb.auth().currentUser?.uid
+    const context = useContext(AppContext);
+    const userId = context.user?.id
     const commentId = props.comment?.commentId;
+
+    useEffect(() => {
+        fetchUserIdData(`users/${props.comment?.userId}`, "on");
+    }, [props.comment?.userId])
+
+    useEffect(() => {
+        getUserData()
+    }, [userIdData])
 
     useEffect(() => {
         fb.database()
@@ -80,6 +91,18 @@ export const SeparateComment = (props: IProps) => {
                 }
             });
     }, []);
+
+    const getUserData = async () => {
+        if (userIdData) {
+            setUserLogin(userIdData.login);
+            if (userIdData.avatar) {
+                const avatar = await fb.storage().ref(userIdData.avatar).getDownloadURL();
+                setUserAvatar(avatar);
+            }else {
+                setUserAvatar(DEFAULT_AVATAR);
+            }
+        }
+    }
 
     const onDeleteComment = () => {
         fb.database().ref(`comments/${id}/${commentId}`).remove();

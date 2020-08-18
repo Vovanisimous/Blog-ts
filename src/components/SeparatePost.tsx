@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Avatar, Card, CardContent, CardHeader, Typography } from "@material-ui/core";
+import { Card, CardContent, CardHeader, Typography } from "@material-ui/core";
 import { red } from "@material-ui/core/colors";
 import { IPost } from "../entity/post";
 import { Link } from "react-router-dom";
@@ -46,17 +46,19 @@ export const SeparatePost = (props: IProps) => {
 
     const getAvatar = async () => {
         const user = post.user;
-        if (user && user.avatar) {
-            const avatarURL = await fb.storage().ref(user.avatar).getDownloadURL();
-            setUserImage(avatarURL);
-        } else {
-            setUserImage(DEFAULT_AVATAR);
+        if (user) {
+            if (user.avatar) {
+                const avatarURL = await fb.storage().ref(user.avatar).getDownloadURL();
+                setUserImage(avatarURL);
+            } else {
+                setUserImage(DEFAULT_AVATAR);
+            }
         }
     };
 
     useEffect(() => {
         getAvatar();
-    }, []);
+    }, [post.user]);
 
     return (
         <Link to={`/posts/${post.user?.id}/${post.id}`} className={classes.link}>

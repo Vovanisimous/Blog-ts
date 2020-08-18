@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Button, Card, TextField, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import {Link, useHistory} from "react-router-dom";
-import { fb } from "../app/App";
 import { useAuth } from "../hooks/useAuth";
 
 const styles = makeStyles(() => ({

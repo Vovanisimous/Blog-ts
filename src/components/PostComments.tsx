@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 import { Card, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { SeparateComment } from "./SeparateCommnent";
@@ -24,8 +24,8 @@ export const PostComments = (props:IProps) => {
         <Card className={classes.card} variant={"outlined"}>
             <Typography variant={"h4"}>Comments:</Typography>
             <div>
-                {comments.map((item) => {
-                    return <SeparateComment comment={item}/>
+                {comments.map((item: IComment) => {
+                    return <SeparateComment key={item.commentId} comment={item}/>
                 })}
             </div>
         </Card>
