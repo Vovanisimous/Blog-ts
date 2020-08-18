@@ -2,7 +2,6 @@ import React, { createContext, useEffect, useState } from "react";
 import { Route, Switch, useHistory } from "react-router";
 import { Main } from "../pages/Main";
 import { Login } from "../pages/Login";
-import { BrowserRouter } from "react-router-dom";
 import { Header } from "../components/Header";
 import { Register } from "../pages/Register";
 import * as firebase from "firebase";
@@ -31,6 +30,14 @@ export const AppContext = createContext<IAppContext>({
     updateUser(user: Partial<IUser>) {
         return Promise.resolve();
     },
+
+    updatePassword(password:string) {
+        return Promise.resolve();
+    },
+
+    reauthenticateWithCredential(credentials: firebase.auth.AuthCredential) {
+        return Promise.resolve();
+    }
 });
 
 function App() {
@@ -86,6 +93,19 @@ function App() {
             .then(() => setAuth(false));
     };
 
+    const reauthenticateWithCredential = (credentials: firebase.auth.AuthCredential) => {
+        fb.auth().currentUser?.reauthenticateWithCredential(credentials)
+        return Promise.resolve();
+    }
+
+    const updatePassword = (password: string): Promise<void> => {
+        const currentUser = fb.auth().currentUser;
+        if (currentUser) {
+            return currentUser.updatePassword(password)
+        }
+        return Promise.resolve();
+    }
+
     const updateUser = (value: Partial<IUser>): Promise<void> => {
         if (user) {
             setUser({
@@ -118,7 +138,7 @@ function App() {
     };
 
     return (
-        <AppContext.Provider value={{ auth, user, updateUser }}>
+        <AppContext.Provider value={{ auth, user, updateUser, updatePassword, reauthenticateWithCredential }}>
             <Header onLogout={onLogout} />
             <Switch>
                 <Route exact path={"/"} component={Main} />

@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Button, Card, TextField, Typography } from "@material-ui/core";
-import { AppContext, fb } from "../../app/App";
+import { AppContext } from "../../app/App";
 import { Alert } from "@material-ui/lab";
 import { useFile } from "../../hooks/useFile";
 import { v4 } from "uuid";
@@ -11,6 +11,8 @@ import { PostsTable } from "../../components/PostsTable";
 import { Layout } from "../../components/Layout";
 import { useDatabase } from "../../hooks/useDatabase";
 import moment from "moment";
+import { useAuth } from "../../hooks/useAuth";
+import { useStorage } from "../../hooks/useStorage";
 
 const styles = makeStyles(() => ({
     container: {
@@ -58,7 +60,7 @@ const DEFAULT_AVATAR = require("./default-avatar.png");
 export const Profile = () => {
     const history = useHistory();
     const classes = styles();
-    const [creationDate, setCreationDate] = useState("")
+    const [creationDate, setCreationDate] = useState("");
     const [email, setEmail] = useState("");
     const [emailSuccess, setEmailSuccess] = useState(false);
     const [emailError, setEmailError] = useState<undefined | string>(undefined);
@@ -77,6 +79,8 @@ export const Profile = () => {
         maxFileSize: 2097152,
     });
     const database = useDatabase();
+    const storage = useStorage<string>();
+    const auth = useAuth();
     const context = useContext(AppContext);
     const userId = context.user?.id;
     const currentUser = context.user;
@@ -92,7 +96,7 @@ export const Profile = () => {
                 setUserName(currentUser.login);
             }
             if (currentUser.createdAt) {
-                setCreationDate(currentUser.createdAt)
+                setCreationDate(currentUser.createdAt);
             }
         }
     }, [currentUser, setUserName, setEmail, setSrc]);
@@ -131,19 +135,20 @@ export const Profile = () => {
     };
 
     const onPassChange = () => {
-        const user = fb.auth().currentUser;
-        if (user) {
+        if (context) {
             if (pass === repeatPass) {
-                user.updatePassword(pass)
+                context
+                    .updatePassword(pass)
                     .then(() => setPassSuccess(true))
                     .catch((error) => {
                         if (error.code === "auth/requires-recent-login") {
-                            if (user.email) {
-                                const credentials = fb.auth.EmailAuthProvider.credential(
-                                    user.email,
+                            if (context.user?.email) {
+                                const credentials = auth.credential(
+                                    context.user.email,
                                     currentPassword,
                                 );
-                                user.reauthenticateWithCredential(credentials)
+                                context
+                                    .reauthenticateWithCredential(credentials)
                                     .then(onPassChange)
                                     .catch((e) => setPassError(e.message));
                             }
@@ -179,18 +184,14 @@ export const Profile = () => {
     const onUploadAvatar = () => {
         if (file) {
             const avatarName = v4();
-            fb.storage()
-                .ref()
-                .child(avatarName)
-                .put(file)
-                .then(async () => {
-                    const image = await fb.storage().ref().child(avatarName).getDownloadURL();
-                    setSrc(image);
-                    database.updateData({ avatar: avatarName }, `users/${userId}`);
-                    context.updateUser({
-                        avatar: image,
-                    });
+            storage.put(file, avatarName).then(async () => {
+                const image = await storage.getChildDownloadURL(avatarName);
+                setSrc(image);
+                database.updateData({ avatar: avatarName }, `users/${userId}`);
+                context.updateUser({
+                    avatar: image,
                 });
+            });
         }
     };
 
