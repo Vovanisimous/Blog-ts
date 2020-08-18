@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { AppContext, fb } from "../app/App";
+import { AppContext } from "../app/App";
 import { IUser } from "../entity/user";
 import { useParams } from "react-router";
 import { IComment, IServerPost } from "../entity/post";
@@ -10,6 +10,7 @@ import { PostComments } from "../components/PostComments";
 import { NewComment } from "../components/NewComment";
 import moment from "moment";
 import { useDatabase } from "../hooks/useDatabase";
+import { useStorage } from "../hooks/useStorage";
 
 const styles = makeStyles(() => ({
     container: {
@@ -33,11 +34,10 @@ export const Post = () => {
     const context = useContext(AppContext);
     const classes = styles();
     const { data: post, fetchData: fetchPost } = useDatabase<IServerPost>();
-    const { data: user, setData: setUser, fetchData: fetchUser } = useDatabase<IUser>();
+    const { data: user, fetchData: fetchUser } = useDatabase<IUser>();
     const { data: commentsData, fetchData: fetchCommentsData } = useDatabase<IComment[]>();
     const database = useDatabase<IComment>();
-
-    useEffect(() => console.log(user), [user]);
+    const storage = useStorage<string>();
 
     useEffect(() => {
         fetchPost(`/posts/${creatorId}/${postId}`, "once");
@@ -54,8 +54,8 @@ export const Post = () => {
 
     const getUserData = async () => {
         if (user) {
-            if (user?.avatar) {
-                const avatar = await fb.storage().ref(user.avatar).getDownloadURL();
+            if (user.avatar) {
+                const avatar = await storage.getDownloadURL(user.avatar)
                 setUserData({
                     id: user.id,
                     login: user.login,
@@ -66,9 +66,9 @@ export const Post = () => {
             } else {
                 setUserData({
                     id: user.id,
-                    login: user?.login,
-                    email: user?.email,
-                    createdAt: user?.createdAt,
+                    login: user.login,
+                    email: user.email,
+                    createdAt: user.createdAt,
                 });
             }
         }

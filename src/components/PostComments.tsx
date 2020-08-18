@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { SeparateComment } from "./SeparateCommnent";
+import { SeparateComment } from "./SeparateComment";
 import {IComment} from "../entity/post";
 
 interface IProps {

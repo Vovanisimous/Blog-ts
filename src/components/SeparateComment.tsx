@@ -9,15 +9,16 @@ import {
     Typography,
 } from "@material-ui/core";
 import { IComment } from "../entity/post";
-import { AppContext, fb } from "../app/App";
+import { AppContext } from "../app/App";
 import { IUser } from "../entity/user";
 import { makeStyles } from "@material-ui/core/styles";
 import { red } from "@material-ui/core/colors";
 import moment from "moment";
 import { Delete, Edit } from "@material-ui/icons";
 import { useParams } from "react-router";
-import {AvatarLink} from "./AvatarLink";
+import { AvatarLink } from "./AvatarLink";
 import { useDatabase } from "../hooks/useDatabase";
+import { useStorage } from "../hooks/useStorage";
 
 interface IProps {
     comment?: IComment;
@@ -66,46 +67,33 @@ export const SeparateComment = (props: IProps) => {
     const classes = styles();
     const { id } = useParams();
     const context = useContext(AppContext);
-    const userId = context.user?.id
+    const userId = context.user?.id;
     const commentId = props.comment?.commentId;
+    const storage = useStorage<string>();
+    const database = useDatabase();
 
     useEffect(() => {
         fetchUserIdData(`users/${props.comment?.userId}`, "on");
-    }, [props.comment?.userId])
+    }, [props.comment?.userId]);
 
     useEffect(() => {
-        getUserData()
-    }, [userIdData])
-
-    useEffect(() => {
-        fb.database()
-            .ref(`users/${props.comment?.userId}`)
-            .on("value", async (snapshot) => {
-                const userIdData: IUser = snapshot.val();
-                setUserLogin(userIdData.login);
-                if (userIdData.avatar) {
-                    const avatar = await fb.storage().ref(userIdData.avatar).getDownloadURL();
-                    setUserAvatar(avatar);
-                } else {
-                    setUserAvatar(DEFAULT_AVATAR);
-                }
-            });
-    }, []);
+        getUserData();
+    }, [userIdData]);
 
     const getUserData = async () => {
         if (userIdData) {
             setUserLogin(userIdData.login);
             if (userIdData.avatar) {
-                const avatar = await fb.storage().ref(userIdData.avatar).getDownloadURL();
+                const avatar = await storage.getDownloadURL(userIdData.avatar);
                 setUserAvatar(avatar);
-            }else {
+            } else {
                 setUserAvatar(DEFAULT_AVATAR);
             }
         }
-    }
+    };
 
     const onDeleteComment = () => {
-        fb.database().ref(`comments/${id}/${commentId}`).remove();
+        database.removeData(`comments/${id}/${commentId}`);
     };
 
     const onEditComment = () => {
@@ -116,21 +104,26 @@ export const SeparateComment = (props: IProps) => {
     };
 
     const onUploadEditedComment = () => {
-        fb.database().ref(`comments/${id}/${commentId}`).set({
-            comment: editedComment,
-            commentId: commentId,
-            createdAt: props.comment?.createdAt,
-            userId: userId,
-        }).then(() => {
-            setCommentEditField(false);
-            setEditedComment("")
-        })
+        database
+            .addData(
+                {
+                    comment: editedComment,
+                    commentId: commentId,
+                    createdAt: props.comment?.createdAt,
+                    userId: userId,
+                },
+                `comments/${id}/${commentId}`,
+            )
+            .then(() => {
+                setCommentEditField(false);
+                setEditedComment("");
+            });
     };
 
     return (
         <Card className={classes.card} variant={"outlined"}>
             <CardHeader
-                avatar={<AvatarLink avatarLink={userAvatar} userLink={props.comment?.userId}/>}
+                avatar={<AvatarLink avatarLink={userAvatar} userLink={props.comment?.userId} />}
                 title={userLogin}
                 subheader={moment(props.comment?.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
                 action={
