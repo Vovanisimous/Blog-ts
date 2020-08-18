@@ -8,6 +8,7 @@ import { UserPostsTable } from "./UserPostsTable";
 import { Layout } from "../../components/Layout";
 import { useDatabase } from "../../hooks/useDatabase";
 import { useStorage } from "../../hooks/useStorage";
+import moment from "moment";
 
 const styles = makeStyles(() => ({
     container: {
@@ -98,6 +99,11 @@ export const UserProfile = () => {
                 <img className={classes.avatar} src={userData?.avatar || DEFAULT_AVATAR} />
             </div>
             <div className={classes.informationContainer}>
+                <Card className={classes.card} variant="outlined">
+                    <Typography variant="h5" component="h4">
+                        Creation date: {moment(userData?.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
+                    </Typography>
+                </Card>
                 <Card className={classes.card} variant="outlined">
                     <Typography variant="h5" component="h4">
                         {userData?.login}
