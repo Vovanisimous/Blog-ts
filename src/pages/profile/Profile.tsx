@@ -196,6 +196,7 @@ export const Profile = () => {
 
     const onDeletePost = (value: string) => {
         database.removeData(`posts/${userId}/${value}`);
+        database.removeData(`comments/${value}`)
     }
 
     const onEditPost = (value:string) => {
