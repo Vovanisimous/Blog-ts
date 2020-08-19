@@ -57,7 +57,7 @@ export const Post = () => {
             if (user.avatar) {
                 const avatar = await storage.getDownloadURL(user.avatar)
                 setUserData({
-                    id: user.id,
+                    id: post?.userId,
                     login: user.login,
                     email: user.email,
                     avatar: avatar,
@@ -65,7 +65,7 @@ export const Post = () => {
                 });
             } else {
                 setUserData({
-                    id: user.id,
+                    id: post?.userId,
                     login: user.login,
                     email: user.email,
                     createdAt: user.createdAt,
