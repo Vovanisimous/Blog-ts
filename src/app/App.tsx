@@ -17,10 +17,13 @@ import { UserProfile } from "../pages/user-profile/UserProfile";
 import { useDatabase } from "../hooks/useDatabase";
 import { useStorage } from "../hooks/useStorage";
 import { useAuth } from "../hooks/useAuth";
+import { Test } from "../pages/test/Test";
+import { transport } from "../services/Transport";
 
 export const fb = firebase;
 const firebaseConfig = require("../firebase/firebase-config.json");
 fb.initializeApp(firebaseConfig);
+transport.init("https://jsonplaceholder.typicode.com")
 
 export const AppContext = createContext<IAppContext>({
     auth: false,
@@ -47,7 +50,6 @@ function App() {
     const [auth, setAuth] = useState(false);
     const [user, setUser] = useState<IUser | undefined>(undefined);
     const history = useHistory();
-    const database = useDatabase();
     const storage = useStorage();
     const authentication = useAuth();
     const { data, fetchData } = useDatabase<IUser>();
@@ -146,6 +148,7 @@ function App() {
                 <PrivateRoute auth={auth} path={"/article"} render={() => <CreateArticle />} />
                 <PrivateRoute auth={auth} path={"/edit/:postId"} render={() => <EditArticle />} />
                 <Route path={"/posts/:creatorId/:postId"} component={Post} />
+                <Route path={"/test"} component={Test} />
             </Switch>
         </AppContext.Provider>
     );
