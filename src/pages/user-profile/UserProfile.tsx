@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Card, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { useParams } from "react-router";
-import { fb } from "../../app/App";
 import { IUser } from "../../entity/user";
 import { IServerPost } from "../../entity/post";
 import { UserPostsTable } from "./UserPostsTable";
 import { Layout } from "../../components/Layout";
+import { useDatabase } from "../../hooks/useDatabase";
+import { useStorage } from "../../hooks/useStorage";
+import moment from "moment";
 
 const styles = makeStyles(() => ({
     container: {
@@ -45,48 +47,69 @@ const DEFAULT_AVATAR = require("./default-avatar.png");
 export const UserProfile = () => {
     const classes = styles();
     const { userId } = useParams();
-    const [userPosts, setUserPosts] = useState<IServerPost[]>([]);
-    const [user, setUser] = useState<IUser | undefined>(undefined);
+    const [userPostsData, setUserPostsData] = useState<IServerPost[]>([]);
+    const [userData, setUserData] = useState<IUser | undefined>(undefined);
+    const { data: user, fetchData: fetchUser } = useDatabase<IUser>();
+    const { data: posts, fetchData: fetchPosts } = useDatabase<IUser>();
+    const storage = useStorage<string>()
 
     useEffect(() => {
-        fb.database()
-            .ref(`users/${userId}`)
-            .on("value", async (snapshot) => {
-                const userData: IUser = snapshot.val();
-                userData.id = userId;
-                if (userData && userData.avatar) {
-                    userData.avatar = await fb.storage().ref(userData.avatar).getDownloadURL();
-                }
-                setUser(userData);
-            });
+        fetchUser(`users/${userId}`, "on");
+        fetchPosts(`posts/${userId}`, "on")
     }, []);
 
     useEffect(() => {
-        fb.database()
-            .ref(`posts/${userId}`)
-            .on("value", (snapshot) => {
-                const userPostsData = snapshot.val();
-                if (userPostsData) {
-                    const postsData: IServerPost[] = Object.values(userPostsData);
-                    setUserPosts(postsData);
-                } else {
-                    setUserPosts([]);
-                }
-            });
-    }, []);
+        getUserData()
+    }, [user])
+
+    useEffect(() => {
+        if (posts) {
+            const postsData: IServerPost[] = Object.values(posts);
+            setUserPostsData(postsData);
+        } else {
+            setUserPostsData([]);
+        }
+    }, [posts])
+
+    const getUserData = async () => {
+        if (user) {
+            if (user.avatar) {
+                const avatar = await storage.getDownloadURL(user.avatar)
+                setUserData({
+                    id: user.id,
+                    login: user.login,
+                    email: user.email,
+                    avatar: avatar,
+                    createdAt: user.createdAt,
+                });
+            } else {
+                setUserData({
+                    id: user.id,
+                    login: user.login,
+                    email: user.email,
+                    createdAt: user.createdAt,
+                });
+            }
+        }
+    };
 
     return (
         <Layout className={classes.container}>
             <div className={classes.avatarContainer}>
-                <img className={classes.avatar} src={user?.avatar || DEFAULT_AVATAR} />
+                <img className={classes.avatar} src={userData?.avatar || DEFAULT_AVATAR} />
             </div>
             <div className={classes.informationContainer}>
                 <Card className={classes.card} variant="outlined">
                     <Typography variant="h5" component="h4">
-                        {user?.login}
+                        Creation date: {moment(userData?.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
                     </Typography>
                 </Card>
-                <UserPostsTable userPosts={userPosts} />
+                <Card className={classes.card} variant="outlined">
+                    <Typography variant="h5" component="h4">
+                        {userData?.login}
+                    </Typography>
+                </Card>
+                <UserPostsTable userPosts={userPostsData} />
             </div>
         </Layout>
     );

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { Avatar, Card, CardContent, CardHeader, Typography } from "@material-ui/core";
+import { Card, CardContent, CardHeader, Typography } from "@material-ui/core";
 import { red } from "@material-ui/core/colors";
 import { IPost } from "../entity/post";
 import { Link } from "react-router-dom";
-import { fb } from "../app/App";
 import moment from "moment";
 import { AvatarLink } from "./AvatarLink";
+import { useStorage } from "../hooks/useStorage";
 
 interface IProps {
     post: IPost;
@@ -43,26 +43,29 @@ export const SeparatePost = (props: IProps) => {
     const classes = styles();
     const { post } = props;
     const [userImage, setUserImage] = useState("");
+    const storage = useStorage<string>()
 
     const getAvatar = async () => {
         const user = post.user;
-        if (user && user.avatar) {
-            const avatarURL = await fb.storage().ref(user.avatar).getDownloadURL();
-            setUserImage(avatarURL);
-        } else {
-            setUserImage(DEFAULT_AVATAR);
+        if (user) {
+            if (user.avatar) {
+                const avatarURL = await storage.getDownloadURL(user.avatar);
+                setUserImage(avatarURL);
+            } else {
+                setUserImage(DEFAULT_AVATAR);
+            }
         }
     };
 
     useEffect(() => {
         getAvatar();
-    }, []);
+    }, [post.user]);
 
     return (
         <Link to={`/posts/${post.user?.id}/${post.id}`} className={classes.link}>
             <Card className={classes.card} variant={"outlined"}>
                 <CardHeader
-                    avatar={<AvatarLink avatarLink={userImage} userLink={props.post.id} />}
+                    avatar={<AvatarLink avatarLink={userImage} userLink={props.post.user?.id} />}
                     title={post.name}
                     subheader={moment(post.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
                 />

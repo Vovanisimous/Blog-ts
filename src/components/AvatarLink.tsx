@@ -1,7 +1,7 @@
 import React, {useContext} from "react";
 import {Link} from "react-router-dom";
 import {makeStyles} from "@material-ui/core/styles";
-import {AppContext, fb} from "../app/App";
+import {AppContext} from "../app/App";
 
 interface IProps {
     avatarLink?: string | null;

@@ -2,7 +2,6 @@ import React, { createContext, useEffect, useState } from "react";
 import { Route, Switch, useHistory } from "react-router";
 import { Main } from "../pages/Main";
 import { Login } from "../pages/Login";
-import { BrowserRouter } from "react-router-dom";
 import { Header } from "../components/Header";
 import { Register } from "../pages/Register";
 import * as firebase from "firebase";
@@ -15,6 +14,9 @@ import { PublicRoute } from "../components/PublicRoute";
 import { PrivateRoute } from "../components/PrivateRoute";
 import { EditArticle } from "../pages/EditArticle";
 import { UserProfile } from "../pages/user-profile/UserProfile";
+import { useDatabase } from "../hooks/useDatabase";
+import { useStorage } from "../hooks/useStorage";
+import { useAuth } from "../hooks/useAuth";
 
 export const fb = firebase;
 const firebaseConfig = require("../firebase/firebase-config.json");
@@ -31,12 +33,24 @@ export const AppContext = createContext<IAppContext>({
     updateUser(user: Partial<IUser>) {
         return Promise.resolve();
     },
+
+    updatePassword(password:string) {
+        return Promise.resolve();
+    },
+
+    reauthenticateWithCredential(credentials: firebase.auth.AuthCredential) {
+        return Promise.resolve();
+    }
 });
 
 function App() {
     const [auth, setAuth] = useState(false);
     const [user, setUser] = useState<IUser | undefined>(undefined);
     const history = useHistory();
+    const database = useDatabase();
+    const storage = useStorage();
+    const authentication = useAuth();
+    const { data, fetchData } = useDatabase<IUser>();
 
     useEffect(() => {
         window.onbeforeunload = () => {
@@ -49,42 +63,45 @@ function App() {
     }, []);
 
     useEffect(() => {
-        fb.auth().onAuthStateChanged(async (user) => {
-            // if (user) {
-            //     setAuth(true);
-            // } else {
-            //     setAuth(false);
-            // }
-            if (user) {
-                setAuth(!!user);
-                if (user && user.email && user.displayName) {
+        authentication.onAuthStateChanged(async (userData) => {
+            if (userData) {
+                setAuth(!!userData);
+                if (userData && userData.email && userData.displayName) {
                     setUser({
-                        login: user.displayName,
-                        email: user.email,
-                        avatar: user.photoURL,
-                        id: user.uid,
+                        login: userData.displayName,
+                        email: userData.email,
+                        avatar: userData.photoURL,
+                        id: userData.uid,
                     });
                 }
-                await fb
-                    .database()
-                    .ref(`users/${user.uid}`)
-                    .once("value", async (snapshot) => {
-                        const data = snapshot.val();
-                        const avatarURL = await fb.storage().ref(data.avatar).getDownloadURL();
-                        user.updateProfile({
-                            photoURL: avatarURL,
-                        });
-                        updateUser({ avatar: avatarURL });
+                await fetchData(`users/${user?.id}`, "once")
+                if (data?.avatar) {
+                    const avatarURL = await storage.getDownloadURL(data?.avatar);
+                    userData.updateProfile({
+                        photoURL: avatarURL,
                     });
+                    updateUser({avatar: avatarURL});
+                }
             }
         });
     }, []);
 
     const onLogout = () => {
-        fb.auth()
-            .signOut()
-            .then(() => setAuth(false));
+        authentication.onSignOut().then(() => setAuth(false));
     };
+
+    const reauthenticateWithCredential = (credentials: firebase.auth.AuthCredential) => {
+        authentication.OnReauthenticateWithCredential(credentials)
+        return Promise.resolve();
+    }
+
+    const updatePassword = (password: string): Promise<void> => {
+        const currentUser = authentication.onCurrentUser();
+        if (currentUser) {
+            return currentUser.updatePassword(password)
+        }
+        return Promise.resolve();
+    }
 
     const updateUser = (value: Partial<IUser>): Promise<void> => {
         if (user) {
@@ -95,19 +112,19 @@ function App() {
                 avatar: value.avatar || user.avatar,
             });
         }
-        const currentUser = fb.auth().currentUser;
+        const currentUser = authentication.onCurrentUser();
         if (currentUser) {
-            const isEmailChanged = fb.auth().currentUser?.email !== value?.email;
+            const isEmailChanged = currentUser?.email !== value?.email;
             if (isEmailChanged && value.email) {
                 return currentUser.updateEmail(value.email);
             }
-            const isLoginChanged = fb.auth().currentUser?.displayName !== value.login;
+            const isLoginChanged = currentUser?.displayName !== value.login;
             if (isLoginChanged && value.login) {
                 return currentUser.updateProfile({
                     displayName: value.login,
                 });
             }
-            const isAvatarChanged = fb.auth().currentUser?.photoURL !== value.avatar;
+            const isAvatarChanged = currentUser?.photoURL !== value.avatar;
             if (isAvatarChanged && value.avatar) {
                 return currentUser.updateProfile({
                     photoURL: value.avatar,
@@ -118,7 +135,7 @@ function App() {
     };
 
     return (
-        <AppContext.Provider value={{ auth, user, updateUser }}>
+        <AppContext.Provider value={{ auth, user, updateUser, updatePassword, reauthenticateWithCredential }}>
             <Header onLogout={onLogout} />
             <Switch>
                 <Route exact path={"/"} component={Main} />

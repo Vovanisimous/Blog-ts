@@ -34,7 +34,6 @@ const DEFAULT_AVATAR = require("./default-avatar.png");
 export const Header = (props: IProps) => {
     const classes = styles();
     const history = useHistory();
-
     const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
     const open = Boolean(anchorEl);
     const context = useContext(AppContext);

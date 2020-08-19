@@ -1,5 +1,6 @@
 import { useFirebase } from "./useFirebase";
 import { useState } from "react";
+import { v4 } from "uuid";
 
 interface IFirebaseDatabase<T> {
     data: T | undefined;
@@ -13,6 +14,8 @@ interface IFirebaseDatabase<T> {
     updateData(data: T | undefined, path: string): Promise<any>;
 
     removeData(path: string): Promise<any>;
+
+    getKey(): string;
 }
 
 export const useDatabase = <T>(): IFirebaseDatabase<T> => {
@@ -34,6 +37,8 @@ export const useDatabase = <T>(): IFirebaseDatabase<T> => {
                 });
         }
     };
+
+    const getKey = () => database().ref().push().key || v4()
 
     const add = (data: T, path: string) => {
         return database()
@@ -58,5 +63,6 @@ export const useDatabase = <T>(): IFirebaseDatabase<T> => {
         addData: add,
         updateData: update,
         removeData: remove,
+        getKey
     };
 };

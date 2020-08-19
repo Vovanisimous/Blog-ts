@@ -7,6 +7,7 @@ import { AvatarLink } from "./AvatarLink";
 
 interface IProps {
     user?: IUser;
+    postCreatedDate?: string;
 }
 
 const styles = makeStyles(() => ({
@@ -23,7 +24,7 @@ export const PostHeader = (props: IProps) => {
             <CardHeader
                 avatar={<AvatarLink avatarLink={props.user?.avatar} userLink={props.user?.id} />}
                 title={props.user?.login}
-                subheader={moment(props.user?.createdAt).format("MMMM Do YYYY, h:mm:ss a")}
+                subheader={moment(props.postCreatedDate).format("MMMM Do YYYY, h:mm:ss a")}
             />
         </Card>
     );

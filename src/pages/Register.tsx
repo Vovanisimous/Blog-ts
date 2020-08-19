@@ -5,6 +5,7 @@ import { Link, useHistory } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useDatabase } from "../hooks/useDatabase";
 import { IUserData } from "../entity/user";
+import moment from "moment";
 
 const styles = makeStyles(() => ({
     container: {
@@ -47,11 +48,13 @@ export const Register = () => {
     const database = useDatabase<IUserData>();
     const history = useHistory();
     const auth = useAuth();
+    const createDate = moment().toISOString();
 
     const onRegister = () => {
         const data = {
             email,
-            login
+            login,
+            createdAt: createDate
         }
         if (password !== repeatPassword) {
             setError("Passwords aren't equal!");

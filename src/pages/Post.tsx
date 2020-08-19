@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
-import { AppContext, fb } from "../app/App";
+import { AppContext } from "../app/App";
 import { IUser } from "../entity/user";
 import { useParams } from "react-router";
-import { IComment, IPost, IServerPost } from "../entity/post";
+import { IComment, IServerPost } from "../entity/post";
 import { makeStyles } from "@material-ui/core/styles";
 import { PostHeader } from "../components/PostHeader";
 import { PostArticle } from "../components/PostArticle";
@@ -10,6 +10,7 @@ import { PostComments } from "../components/PostComments";
 import { NewComment } from "../components/NewComment";
 import moment from "moment";
 import { useDatabase } from "../hooks/useDatabase";
+import { useStorage } from "../hooks/useStorage";
 
 const styles = makeStyles(() => ({
     container: {
@@ -29,53 +30,73 @@ const styles = makeStyles(() => ({
 export const Post = () => {
     const { postId, creatorId } = useParams();
     const [comments, setComments] = useState<IComment[]>([]);
+    const [userData, setUserData] = useState<IUser>();
     const context = useContext(AppContext);
     const classes = styles();
     const { data: post, fetchData: fetchPost } = useDatabase<IServerPost>();
-    const { data: user, setData: setUser, fetchData: fetchUser } = useDatabase<IUser>();
-    const { data: commentsData, fetchData: fetchCommentsData } = useDatabase<IComment[]>()
-    const database = useDatabase<IComment>()
+    const { data: user, fetchData: fetchUser } = useDatabase<IUser>();
+    const { data: commentsData, fetchData: fetchCommentsData } = useDatabase<IComment[]>();
+    const database = useDatabase<IComment>();
+    const storage = useStorage<string>();
 
     useEffect(() => {
         fetchPost(`/posts/${creatorId}/${postId}`, "once");
-        fetchUser(`/users/${post?.userId}`, "once");
-        fetchCommentsData(`comments/${postId}`, "on")
-    }, [postId, creatorId, postId]);
+        fetchCommentsData(`comments/${postId}`, "on");
+    }, []);
 
     useEffect(() => {
-        fetchAvatar()}
-    , [user]);
+        fetchUser(`/users/${post?.userId}`, "once");
+    }, [post])
 
-    const fetchAvatar = async () => {
-        if (user?.avatar) {
-            const avatar = await fb.storage().ref(user.avatar).getDownloadURL();
-            setUser({...user, avatar})
+    useEffect(() => {
+        getUserData();
+    }, [user]);
+
+    const getUserData = async () => {
+        if (user) {
+            if (user.avatar) {
+                const avatar = await storage.getDownloadURL(user.avatar)
+                setUserData({
+                    id: post?.userId,
+                    login: user.login,
+                    email: user.email,
+                    avatar: avatar,
+                    createdAt: user.createdAt,
+                });
+            } else {
+                setUserData({
+                    id: post?.userId,
+                    login: user.login,
+                    email: user.email,
+                    createdAt: user.createdAt,
+                });
+            }
         }
-    }
+    };
 
     useEffect(() => {
         if (commentsData) {
             const commentsObjectData: IComment[] = Object.values(commentsData);
             setComments(commentsObjectData.reverse());
-        };
+        }
     }, [commentsData]);
 
     const onCreateComment = (value: string) => {
         const userId = context.user?.id;
         const createDate = moment().toISOString();
-        const key = fb.database().ref().push().key;
+        const key = database.getKey();
         const data = {
             createdAt: createDate,
             comment: value,
             userId,
-            commentId: key
-        }
-        return database.addData(data, `comments/${postId}/${key}`)
+            commentId: key,
+        };
+        return database.addData(data, `comments/${postId}/${key}`);
     };
 
     return (
         <div className={classes.container}>
-            <PostHeader user={user} />
+            <PostHeader user={userData} postCreatedDate={post?.createdAt} />
             <PostArticle post={post} />
             <NewComment postId={String(postId)} onCreateComment={onCreateComment} />
             <PostComments comments={comments} />

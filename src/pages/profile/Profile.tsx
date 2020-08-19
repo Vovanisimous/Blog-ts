@@ -1,20 +1,18 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import {
-    Button,
-    Card,
-    TextField,
-    Typography
-} from "@material-ui/core";
-import { AppContext, fb } from "../../app/App";
+import { Button, Card, TextField, Typography } from "@material-ui/core";
+import { AppContext } from "../../app/App";
 import { Alert } from "@material-ui/lab";
 import { useFile } from "../../hooks/useFile";
 import { v4 } from "uuid";
 import { useHistory } from "react-router-dom";
-import {IServerPost} from "../../entity/post";
-import {PostsTable} from "../../components/PostsTable";
-import {Layout} from "../../components/Layout";
+import { IServerPost } from "../../entity/post";
+import { PostsTable } from "../../components/PostsTable";
+import { Layout } from "../../components/Layout";
 import { useDatabase } from "../../hooks/useDatabase";
+import moment from "moment";
+import { useAuth } from "../../hooks/useAuth";
+import { useStorage } from "../../hooks/useStorage";
 
 const styles = makeStyles(() => ({
     container: {
@@ -54,7 +52,7 @@ const styles = makeStyles(() => ({
     },
     postName: {
         overflow: "hidden",
-    }
+    },
 }));
 
 const DEFAULT_AVATAR = require("./default-avatar.png");
@@ -62,6 +60,7 @@ const DEFAULT_AVATAR = require("./default-avatar.png");
 export const Profile = () => {
     const history = useHistory();
     const classes = styles();
+    const [creationDate, setCreationDate] = useState("");
     const [email, setEmail] = useState("");
     const [emailSuccess, setEmailSuccess] = useState(false);
     const [emailError, setEmailError] = useState<undefined | string>(undefined);
@@ -73,13 +72,15 @@ export const Profile = () => {
     const [currentPassword, setCurrentPassword] = useState("");
     const [passSuccess, setPassSuccess] = useState(false);
     const [passError, setPassError] = useState<undefined | string>(undefined);
-    const [userPosts, setUserPosts] = useState<IServerPost[]>([])
+    const [userPosts, setUserPosts] = useState<IServerPost[]>([]);
     const inputRef = useRef<HTMLInputElement>(null);
     const { src, loadFile, file, setSrc } = useFile({
         whiteList: ["jpg", "png"],
         maxFileSize: 2097152,
     });
     const database = useDatabase();
+    const storage = useStorage<string>();
+    const auth = useAuth();
     const context = useContext(AppContext);
     const userId = context.user?.id;
     const currentUser = context.user;
@@ -94,28 +95,31 @@ export const Profile = () => {
             if (currentUser.login) {
                 setUserName(currentUser.login);
             }
+            if (currentUser.createdAt) {
+                setCreationDate(currentUser.createdAt);
+            }
         }
     }, [currentUser, setUserName, setEmail, setSrc]);
 
-    useEffect( () => {
+    useEffect(() => {
         fetchPost(`posts/${userId}`, "on");
-    }, [userId])
+    }, [userId]);
 
-    useEffect ( () => {
+    useEffect(() => {
         if (post) {
-            const postsData:IServerPost[] = Object.values(post);
-            setUserPosts(postsData)
+            const postsData: IServerPost[] = Object.values(post);
+            setUserPosts(postsData);
         } else {
             setUserPosts([]);
         }
-    }, [post])
+    }, [post]);
 
     const onEmailChange = () => {
         context
             .updateUser({ email })
             .then(() => {
                 setEmailSuccess(true);
-                database.updateData({email}, `users/${userId}`)
+                database.updateData({ email }, `users/${userId}`);
             })
             .catch((error) => setEmailError(error.message));
     };
@@ -125,25 +129,26 @@ export const Profile = () => {
             .updateUser({ login: userName })
             .then(() => {
                 setUserNameSuccess(true);
-                database.updateData({login: userName}, `users/${userId}`)
+                database.updateData({ login: userName }, `users/${userId}`);
             })
             .catch((error) => setUserNameError(error.message));
     };
 
     const onPassChange = () => {
-        const user = fb.auth().currentUser;
-        if (user) {
+        if (context) {
             if (pass === repeatPass) {
-                user.updatePassword(pass)
+                context
+                    .updatePassword(pass)
                     .then(() => setPassSuccess(true))
                     .catch((error) => {
                         if (error.code === "auth/requires-recent-login") {
-                            if (user.email) {
-                                const credentials = fb.auth.EmailAuthProvider.credential(
-                                    user.email,
+                            if (context.user?.email) {
+                                const credentials = auth.credential(
+                                    context.user.email,
                                     currentPassword,
                                 );
-                                user.reauthenticateWithCredential(credentials)
+                                context
+                                    .reauthenticateWithCredential(credentials)
                                     .then(onPassChange)
                                     .catch((e) => setPassError(e.message));
                             }
@@ -179,28 +184,25 @@ export const Profile = () => {
     const onUploadAvatar = () => {
         if (file) {
             const avatarName = v4();
-            fb.storage()
-                .ref()
-                .child(avatarName)
-                .put(file)
-                .then(async () => {
-                    const image = await fb.storage().ref().child(avatarName).getDownloadURL();
-                    setSrc(image);
-                    database.updateData({avatar: avatarName}, `users/${userId}`);
-                    context.updateUser({
-                        avatar: image,
-                    });
+            storage.put(file, avatarName).then(async () => {
+                const image = await storage.getChildDownloadURL(avatarName);
+                setSrc(image);
+                database.updateData({ avatar: avatarName }, `users/${userId}`);
+                context.updateUser({
+                    avatar: image,
                 });
+            });
         }
     };
 
     const onDeletePost = (value: string) => {
         database.removeData(`posts/${userId}/${value}`);
-    }
+        database.removeData(`comments/${value}`);
+    };
 
-    const onEditPost = (value:string) => {
+    const onEditPost = (value: string) => {
         history.push(`/edit/${value}`);
-    }
+    };
 
     return (
         <Layout className={classes.container}>
@@ -223,6 +225,11 @@ export const Profile = () => {
                 </Button>
             </div>
             <div className={classes.informationContainer}>
+                <Card className={classes.Card} variant="outlined">
+                    <Typography variant="h5" component="h4">
+                        Creation date: {moment(creationDate).format("MMMM Do YYYY, h:mm:ss a")}
+                    </Typography>
+                </Card>
                 <Card className={classes.Card} variant="outlined">
                     <Typography variant="h5" component="h4">
                         Your email:
@@ -277,7 +284,11 @@ export const Profile = () => {
                     )}
                     {passError && <Alert severity="error">{passError}</Alert>}
                 </Card>
-                <PostsTable userPosts={userPosts} onDeletePost={onDeletePost} onEditPost={onEditPost}/>
+                <PostsTable
+                    userPosts={userPosts}
+                    onDeletePost={onDeletePost}
+                    onEditPost={onEditPost}
+                />
             </div>
         </Layout>
     );

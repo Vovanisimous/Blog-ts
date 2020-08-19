@@ -5,4 +5,8 @@ export interface IAppContext {
     user?: IUser;
 
     updateUser(user: Partial<IUser>): Promise<void>;
+
+    updatePassword(newPassword: string): Promise<void>;
+
+    reauthenticateWithCredential(credentials: firebase.auth.AuthCredential): Promise<void>;
 }
