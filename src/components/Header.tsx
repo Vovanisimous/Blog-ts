@@ -1,8 +1,9 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AppBar, IconButton, MenuItem, Menu, Toolbar, Typography, Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { Link, useHistory } from "react-router-dom";
 import { AppContext } from "../app/App";
+import { Test } from "../pages/test/Test";
 
 interface IProps {
     onLogout?(): void;
@@ -34,7 +35,7 @@ const DEFAULT_AVATAR = require("./default-avatar.png");
 export const Header = (props: IProps) => {
     const classes = styles();
     const history = useHistory();
-    const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const open = Boolean(anchorEl);
     const context = useContext(AppContext);
     const currentUser = context.user;
@@ -65,6 +66,10 @@ export const Header = (props: IProps) => {
         setAnchorEl(null);
         history.push("/profile");
     };
+
+    const goToTest = () => {
+        history.push("/test");
+    }
 
     return (
         <AppBar position="fixed">
@@ -109,6 +114,7 @@ export const Header = (props: IProps) => {
                         >
                             <MenuItem onClick={goToProfile}>Profile</MenuItem>
                             <MenuItem onClick={logout}>Logout</MenuItem>
+                            <MenuItem onClick={goToTest}>Test</MenuItem>
                         </Menu>
                     </div>
                 ) : (
