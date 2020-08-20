@@ -2,20 +2,16 @@ import React, { useEffect, useState } from "react";
 import { transport } from "../../services/Transport";
 import { IApiComment, IApiPost } from "./apiEntity";
 import {
-    Button,
     Card,
     CardContent,
     CardHeader,
-    FormControl, IconButton,
+    FormControl,
     InputLabel,
     MenuItem,
-    Select, TextField,
+    Select,
     Typography,
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { AvatarLink } from "../../components/AvatarLink";
-import moment from "moment";
-import { Delete, Edit } from "@material-ui/icons";
 
 const useStyles = makeStyles(() => ({
     container: {
