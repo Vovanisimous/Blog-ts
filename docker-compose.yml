@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    container_name: dedicated
+    ports:
+      - ${PORT:-80}:80
